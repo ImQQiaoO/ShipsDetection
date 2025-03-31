@@ -1,4 +1,4 @@
-.idea
+﻿.idea
 .venv
 /.vs
 ships_dataset
@@ -6,3 +6,7 @@ runs
 TrainProcess.md
 target
 /*.pt
+ShipsDetection
+/x64
+*.jpg
+*.png
