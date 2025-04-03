@@ -24,12 +24,21 @@ const wchar_t *char_to_wchar(const char *charStr) {
 }
 #endif
 
-// letterbox函数：将图片resize到指定尺寸（如640x640）并保持宽高比，用灰色填充空白区域
+/**
+ * 这个函数的目的是将任意尺寸的输入图像调整为模型所需的固定尺寸（如640×640），
+ * 同时保持图像的原始宽高比以避免失真，并用灰色填充多余的空间。
+ * @param img       输入图像
+ * @param new_shape 目标尺寸
+ * @param scale     输出参数，记录实际缩放比例
+ * @param pad_w     输出参数，记录填充的像素数
+ * @param pad_h     输出参数，记录填充的像素数
+ */
 cv::Mat letterbox(const cv::Mat &img, const cv::Size &new_shape, float &scale, int &pad_w, int &pad_h) {
     int width = img.cols;
     int height = img.rows;
     // 计算缩放比例：取宽高的最小比例
-    scale = std::min(new_shape.width / (float)width, new_shape.height / (float)height);
+    scale = std::min(static_cast<float>(new_shape.width) / static_cast<float>(width),
+        static_cast<float>(new_shape.height) / static_cast<float>(height));
     int new_unpad_w = std::round(width * scale);
     int new_unpad_h = std::round(height * scale);
     // 计算需要填充的宽高（左右和上下分别填充一半）
@@ -67,10 +76,27 @@ void printTensorInfo(const Ort::Value &tensor, const char *name) {
 
 int main() {
     // 初始化 onnxruntime 环境和会话
+    //Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "YOLO");
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "YOLO");
-    Ort::SessionOptions session_options;
-    session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+    Ort::SessionOptions session_options;    // 创建一个会话选项对象，用于配置模型推理会话的行为
+    //session_options.SetIntraOpNumThreads(1);    // CPU inference
+
+    try {
+        // GPU inference
+        OrtCUDAProviderOptions cuda_options;
+        cuda_options.device_id = 0;  // 使用第一个GPU
+        cuda_options.arena_extend_strategy = 0;  // 默认策略
+        cuda_options.gpu_mem_limit = SIZE_MAX;  // 使用所有可用GPU内存
+        cuda_options.cudnn_conv_algo_search = OrtCudnnConvAlgoSearchExhaustive;  // 更全面的卷积算法搜索
+        cuda_options.do_copy_in_default_stream = 1;
+        session_options.AppendExecutionProvider_CUDA(cuda_options);
+        session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);  // 启用所有可能的图优化
+        //session_options.AppendExecutionProvider_CUDA(OrtCUDAProviderOptions {});// DEBUG 默认初始化
+    } catch (const Ort::Exception &e) {
+        std::cout << "ONNX Runtime异常: " << e.what() << std::endl;
+        std::cout << "错误代码: " << e.GetOrtErrorCode() << std::endl;
+        exit(1);
+    }
 
     std::string modelPath = "./runs/detect/train4/weights/best.onnx";
 
@@ -83,12 +109,12 @@ int main() {
     Ort::AllocatorWithDefaultOptions allocator;
 
     // 获取输入节点名称
-    auto input_name_alloc = session.GetInputNameAllocated(0, allocator);
+    auto input_name_alloc = session.GetInputNameAllocated(0, allocator); // 获取模型的第一个输入节点(索引0)的名称
     const char *input_name = input_name_alloc.get();
     std::cout << "输入名称: " << input_name << '\n';
 
     // 获取输出节点名称
-    size_t outputCount = session.GetOutputCount();
+    size_t outputCount = session.GetOutputCount(); // 获取模型输出节点的数量
     std::vector<const char *> outputNames;
     std::vector<std::string> outputNameStr; // 保存字符串，避免内存泄漏
 
@@ -100,9 +126,14 @@ int main() {
     }
 
     // 模型输入尺寸
-    std::vector<int64_t> inputShape = {1, 3, 640, 640};
-    const int INPUT_WIDTH = 640;
-    const int INPUT_HEIGHT = 640;
+    constexpr int INPUT_WIDTH = 640;
+    constexpr int INPUT_HEIGHT = 640;
+    std::vector<int64_t> inputShape = {
+        1,              /* 批处理大小 */
+        3,              /* 颜色通道 */
+        INPUT_WIDTH,    /* 垂直像素数 */
+        INPUT_HEIGHT    /* 水平像素数 */
+    };
 
     std::string targetDir = "./target/";
     for (const auto &entry : fs::directory_iterator(targetDir)) {
@@ -129,22 +160,28 @@ int main() {
 
         // 预处理：归一化、BGR转RGB，并转换为 float 类型
         cv::Mat blob;
+        // 将img_letterbox转换为32位浮点类型(CV_32F) ，应用缩放因子1.0 / 255.0，将像素值从[0, 255]范围缩放到[0, 1]范围
         img_letterbox.convertTo(blob, CV_32F, 1.0 / 255.0);
+        // 颜色空间转换 将图像从BGR颜色空间转换为RGB颜色空间
         cv::cvtColor(blob, blob, cv::COLOR_BGR2RGB);
 
         // HWC转CHW并放入vector中
+        // OpenCV默认存储图像为 HWC（高度 × 宽度 × 通道）
+        // ONNX期望图像为 CHW 格式（通道 × 高度 × 宽度）
         std::vector<float> inputTensorValues(1 * 3 * INPUT_WIDTH * INPUT_HEIGHT);
         for (int c = 0; c < 3; ++c) {
             for (int h = 0; h < INPUT_HEIGHT; ++h) {
                 for (int w = 0; w < INPUT_WIDTH; ++w) {
-                    inputTensorValues[c * INPUT_WIDTH * INPUT_HEIGHT + h * INPUT_WIDTH + w] =
-                        blob.at<cv::Vec3f>(h, w)[c];
+                    inputTensorValues[c * INPUT_WIDTH * INPUT_HEIGHT /*通道 c 起始位置的偏移量*/ +
+                        h * INPUT_WIDTH /*该通道内行 h 起始位置的偏移量*/ +
+                        w /*该行内特定列 w 的偏移量*/] =
+                        blob.at<cv::Vec3f>(h, w)[c]; // 以 HWC 格式（OpenCV 的格式）访问数据
                 }
             }
         }
 
         // 创建输入tensor
-        Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+        Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator/*使用默认的CPU设备分配器*/, OrtMemTypeCPU/*指定内存类型为CPU内存*/);
         Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo,
             inputTensorValues.data(), inputTensorValues.size(),
             inputShape.data(), inputShape.size());
@@ -232,7 +269,21 @@ int main() {
         cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
 
         // 绘制检测框
-        const char *class_names[] = {"containership", "cruise", "bulkcarrier", "other", "fishing"};
+        const char *class_names[] = {
+            "cargo",
+            "tanker",
+            "bulker",
+            "containership",
+            "tug",
+            "fishing",
+            "drill",
+            "passenger",
+            "cruise",
+            "warship",
+            "sailingboat",
+            "submarine",
+            "firefighting",
+        };
         for (int idx : indices) {
             cv::Rect box = boxes[idx];
             float conf = confidences[idx];
@@ -246,7 +297,7 @@ int main() {
             cv::rectangle(img, box, cv::Scalar(0, 255, 0), 2);
 
             // 添加标签
-            std::string label = class_id < 5 ? class_names[class_id] : "unknown";
+            std::string label = class_id < std::size(class_names) ? class_names[class_id] : "unknown";
             label += " " + std::to_string(static_cast<int>(conf * 100)) + "%";
 
             int baseline = 0;
