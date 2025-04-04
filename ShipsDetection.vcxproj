@@ -128,7 +128,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\ShipsDetection.cpp" />
+    <ClCompile Include="src\inference\draw_bounding_box.cpp" />
+    <ClCompile Include="src\inference\detection.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\inference\draw_bounding_box.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

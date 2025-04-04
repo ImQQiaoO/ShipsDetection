@@ -15,8 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ShipsDetection.cpp">
+    <ClCompile Include="src\inference\detection.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\inference\draw_bounding_box.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\inference\draw_bounding_box.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

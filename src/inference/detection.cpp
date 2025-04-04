@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <vector>
 #include <algorithm>
+#include "draw_bounding_box.h"
 
 namespace fs = std::filesystem;
 
@@ -95,7 +96,6 @@ int main() {
     } catch (const Ort::Exception &e) {
         std::cout << "ONNX Runtime异常: " << e.what() << std::endl;
         std::cout << "错误代码: " << e.GetOrtErrorCode() << std::endl;
-        exit(1);
     }
 
     std::string modelPath = "./runs/detect/train4/weights/best.onnx";
@@ -268,45 +268,8 @@ int main() {
         std::vector<int> indices;
         cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
 
-        // 绘制检测框
-        const char *class_names[] = {
-            "cargo",
-            "tanker",
-            "bulker",
-            "containership",
-            "tug",
-            "fishing",
-            "drill",
-            "passenger",
-            "cruise",
-            "warship",
-            "sailingboat",
-            "submarine",
-            "firefighting",
-        };
-        for (int idx : indices) {
-            cv::Rect box = boxes[idx];
-            float conf = confidences[idx];
-            int class_id = classIds[idx];
-
-            std::cout << "检测框: x=" << box.x << ", y=" << box.y
-                << ", width=" << box.width << ", height=" << box.height
-                << ", class=" << class_id << ", conf=" << conf << '\n';
-
-            // 绘制框和标签
-            cv::rectangle(img, box, cv::Scalar(0, 255, 0), 2);
-
-            // 添加标签
-            std::string label = class_id < std::size(class_names) ? class_names[class_id] : "unknown";
-            label += " " + std::to_string(static_cast<int>(conf * 100)) + "%";
-
-            int baseline = 0;
-            cv::Size label_size = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseline);
-            cv::rectangle(img, cv::Point(box.x, box.y - label_size.height - baseline - 10),
-                cv::Point(box.x + label_size.width, box.y), cv::Scalar(0, 255, 0), cv::FILLED);
-            cv::putText(img, label, cv::Point(box.x, box.y - baseline - 5),
-                cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
-        }
+        draw_bounding_box bounding_box;
+        bounding_box.draw(img, indices, boxes, confidences, classIds);
 
         // 保存和显示结果
         cv::imwrite("result_" + entry.path().filename().string(), img);
