@@ -38,7 +38,6 @@ void draw_bounding_box::draw(cv::Mat &img, const std::vector<int> &indices, cons
             << ", class=" << class_id << ", conf=" << conf << '\n';
 
         // 绘制框和标签
-        std::cout << "class_id % box_color.size() is: " << class_id % box_color.size() << std::endl;
         auto curr_color = box_color[class_id % box_color.size()];
         cv::rectangle(img, box, cv::Scalar(curr_color[0], curr_color[1], curr_color[2], curr_color[3]), 2);
 

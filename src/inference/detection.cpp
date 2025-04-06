@@ -182,9 +182,10 @@ int main() {
 
         // 创建输入tensor
         Ort::MemoryInfo memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator/*使用默认的CPU设备分配器*/, OrtMemTypeCPU/*指定内存类型为CPU内存*/);
+        // 创建实际的输入张量
         Ort::Value inputTensor = Ort::Value::CreateTensor<float>(memoryInfo,
             inputTensorValues.data(), inputTensorValues.size(),
-            inputShape.data(), inputShape.size());
+            inputShape.data(), inputShape.size()/*形状数组的大小(维度数量，这里是4)*/);
 
         // 执行推理
         auto outputTensors = session.Run(Ort::RunOptions {nullptr},
@@ -200,11 +201,11 @@ int main() {
         float *outputData = outputTensors[0].GetTensorMutableData<float>();
         auto outputShape = outputTensors[0].GetTensorTypeAndShapeInfo().GetShape();
 
-        float confThreshold = 0.25f;
-        float nmsThreshold = 0.45f;
-        std::vector<cv::Rect> boxes;
-        std::vector<float> confidences;
-        std::vector<int> classIds;
+        float confThreshold = 0.25f;    // 置信度阈值
+        float nmsThreshold = 0.45f;     // 非极大值抑制阈值
+        std::vector<cv::Rect> boxes;    // 存储边界框
+        std::vector<float> confidences; // 存储置信度分数
+        std::vector<int> classIds;      // 存储类别ID
 
         // YOLOv8的输出通常是 [1, 84, 8400] 或者 [1, NUM_CLASSES+4, NUM_BOXES]
         // 注意YOLOv8输出格式：前4个值是边界框坐标(x,y,w,h)，后面是类别置信度
@@ -265,6 +266,7 @@ int main() {
         }
 
         // 非极大值抑制（NMS）
+        // 确保同一个物体不会被多次检测
         std::vector<int> indices;
         cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
 
@@ -272,10 +274,13 @@ int main() {
         bounding_box.draw(img, indices, boxes, confidences, classIds);
 
         // 保存和显示结果
-        cv::imwrite("result_" + entry.path().filename().string(), img);
-        cv::imshow("检测结果", img);
-        cv::waitKey(0);
+        //cv::imwrite("result_" + entry.path().filename().string(), img);
+        std::string windowName = "检测结果 - " + entry.path().filename().string();
+        cv::namedWindow(windowName, cv::WINDOW_AUTOSIZE);
+        cv::imshow(windowName, img);
+        cv::waitKey(1);
     }
+    cv::waitKey(0);
 
     return 0;
 }
