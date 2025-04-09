@@ -15,15 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\inference\detection.cpp">
+    <ClCompile Include="src\inference\SessionManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\inference\draw_bounding_box.cpp">
+    <ClCompile Include="src\inference\DrawBoundingBox.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inference\ModelInit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inference\ImageInference.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\inference\draw_bounding_box.h">
+    <ClInclude Include="src\inference\DrawBoundingBox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inference\SessionManager.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inference\ModelInit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\inference\ImageInference.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

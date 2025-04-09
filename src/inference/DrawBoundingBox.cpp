@@ -3,10 +3,9 @@
 #include <regex>
 #include <string>
 #include <vector>
-#include <opencv2/opencv.hpp>
-#include "draw_bounding_box.h"
+#include "DrawBoundingBox.h"
 
-const std::vector<std::array<double, 4>> draw_bounding_box::box_color = {
+const std::vector<std::array<double, 4>> DrawBoundingBox::box_color = {
     // IN OPENCV IT IS BGRY
     {30, 208, 146, 255},
     {161, 164, 254, 255},
@@ -22,11 +21,11 @@ const std::vector<std::array<double, 4>> draw_bounding_box::box_color = {
     {232, 208, 172, 255},
 };
 
-draw_bounding_box::draw_bounding_box() {
-    class_names = parse_class_names("./ships_dataset/data.yaml");
+DrawBoundingBox::DrawBoundingBox() {
+    class_names_ = parse_class_names("./ships_dataset/data.yaml");
 }
 
-void draw_bounding_box::draw(cv::Mat &img, const std::vector<int> &indices, const std::vector<cv::Rect> &boxes, const std::vector<float> &confidences,
+void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const std::vector<cv::Rect> &boxes, const std::vector<float> &confidences,
     const std::vector<int> &class_ids) const {
     for (int idx : indices) {
         cv::Rect box = boxes[idx];
@@ -42,7 +41,7 @@ void draw_bounding_box::draw(cv::Mat &img, const std::vector<int> &indices, cons
         cv::rectangle(img, box, cv::Scalar(curr_color[0], curr_color[1], curr_color[2], curr_color[3]), 2);
 
         // 添加标签
-        std::string label = class_id < static_cast<int>(class_names.size()) ? class_names[class_id] : "unknown";
+        std::string label = class_id < static_cast<int>(class_names_.size()) ? class_names_[class_id] : "unknown";
         label += " " + std::to_string(static_cast<int>(conf * 100)) + "%";
 
         int baseline = 0;
@@ -56,7 +55,7 @@ void draw_bounding_box::draw(cv::Mat &img, const std::vector<int> &indices, cons
     }
 }
 
-std::vector<std::string> draw_bounding_box::parse_class_names(const std::string &yaml_path) {
+std::vector<std::string> DrawBoundingBox::parse_class_names(const std::string &yaml_path) {
     std::vector<std::string> class_names;
     std::ifstream file(yaml_path);
 

@@ -128,11 +128,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\inference\draw_bounding_box.cpp" />
-    <ClCompile Include="src\inference\detection.cpp" />
+    <ClCompile Include="src\inference\DrawBoundingBox.cpp" />
+    <ClCompile Include="src\inference\ImageInference.cpp" />
+    <ClCompile Include="src\inference\ModelInit.cpp" />
+    <ClCompile Include="src\inference\SessionManager.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\inference\draw_bounding_box.h" />
+    <ClInclude Include="src\inference\ImageInference.h" />
+    <ClInclude Include="src\inference\ModelInit.h" />
+    <ClInclude Include="src\inference\SessionManager.h" />
+    <ClInclude Include="src\inference\DrawBoundingBox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
