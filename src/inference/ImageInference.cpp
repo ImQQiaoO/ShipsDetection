@@ -60,7 +60,9 @@ ImageInference::ImageInference(cv::Mat img, Ort::Session *session, ModelInit &mo
     // 保存原图尺寸
     orig_w_ = img_.cols;
     orig_h_ = img_.rows;
+#if (!defined(NDEBUG))
     std::cout << "原图尺寸: " << orig_w_ << "x" << orig_h_ << '\n';
+#endif
     img_letterbox_ = preprocess_image();                // STEP1: 图像预处理（包括 letterbox）
     convert_to_tensor();                                // STEP2: 转换为tensor格式
     Ort::Value output_tensor = run_inference(mod);   // STEP3: 推理计算
@@ -71,8 +73,9 @@ ImageInference::ImageInference(cv::Mat img, Ort::Session *session, ModelInit &mo
 cv::Mat ImageInference::preprocess_image() {
     // 使用 letterbox 调整图片大小
     cv::Mat img_lb = letterbox(img_, cv::Size(ModelInit::INPUT_WIDTH, ModelInit::INPUT_HEIGHT), scale_, pad_w_, pad_h_);
+#if (!defined(NDEBUG))
     std::cout << "Letterbox信息: scale=" << scale_ << ", pad_w=" << pad_w_ << ", pad_h=" << pad_h_ << '\n';
-
+#endif
     // 预处理：归一化、BGR -> RGB
     cv::Mat blob;
     img_lb.convertTo(blob, CV_32F, 1.0 / 255.0);
@@ -111,9 +114,12 @@ Ort::Value ImageInference::run_inference(ModelInit &mod) {
         output_names.data(), output_names.size());
 
     // 调试打印输出tensor信息
+#if (!defined(NDEBUG))
     for (size_t i = 0; i < output_tensors.size(); i++) {
         print_tensor_info(output_tensors[i], output_names[i]);
     }
+#endif
+
     return std::move(output_tensors[0]);  // 返回第一个输出tensor
 }
 
@@ -124,9 +130,9 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
     // 获取输出维度和检测框数量
     int64_t dimensions = output_shape[1];
     int64_t num_boxes = output_shape[2];
-
+#if (!defined(NDEBUG))
     std::cout << "输出维度: " << dimensions << ", 框数量: " << num_boxes << '\n';
-
+#endif
     // 遍历每个检测框并提取有效候选框
     for (int i = 0; i < num_boxes; ++i) {
         float max_class_score = 0;
@@ -146,10 +152,10 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
         float y = output_data[1 * num_boxes + i];
         float w = output_data[2 * num_boxes + i];
         float h = output_data[3 * num_boxes + i];
-
+#if (!defined(NDEBUG))
         std::cout << "原始检测结果: x=" << x << ", y=" << y << ", w=" << w << ", h=" << h
             << ", class=" << class_id << ", score=" << max_class_score << '\n';
-
+#endif
         // 将 letterbox 坐标映射回原图
         float x_center = (x - static_cast<float>(pad_w_)) / scale_;
         float y_center = (y - static_cast<float>(pad_h_)) / scale_;
@@ -167,8 +173,10 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
         boxes_.emplace_back(left, top, box_w, box_h);
         confidences_.push_back(max_class_score);
         class_ids_.push_back(class_id);
-
+#if (!defined(NDEBUG))
         std::cout << "转换后: left=" << left << ", top=" << top << ", width=" << box_w << ", height=" << box_h << '\n';
+#endif
+
     }
 }
 

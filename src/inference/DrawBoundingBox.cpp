@@ -32,9 +32,11 @@ void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const 
         float conf = confidences[idx];
         int class_id = class_ids[idx];
 
+#if (!defined(NDEBUG))
         std::cout << "检测框: x=" << box.x << ", y=" << box.y
             << ", width=" << box.width << ", height=" << box.height
             << ", class=" << class_id << ", conf=" << conf << '\n';
+#endif
 
         // 绘制框和标签
         auto curr_color = box_color[class_id % box_color.size()];

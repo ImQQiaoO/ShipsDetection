@@ -10,3 +10,4 @@ ShipsDetection
 /x64
 *.jpg
 *.png
+/target_video
