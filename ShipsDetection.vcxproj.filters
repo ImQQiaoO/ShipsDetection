@@ -30,6 +30,9 @@
     <ClCompile Include="src\inference\ImageInference.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\inference\CUDAMemoryManager.h">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\inference\DrawBoundingBox.h">

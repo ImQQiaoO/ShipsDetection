@@ -6,6 +6,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <cuda_runtime.h>
+#include "CUDAMemoryManager.h"
 
 /**
  * 这个函数的目的是将任意尺寸的输入图像调整为模型所需的固定尺寸（如640×640），
@@ -112,42 +113,37 @@ void ImageInference::convert_to_tensor() {
 }
 
 Ort::Value ImageInference::run_inference(ModelInit &mod) {
-    // 计算输入数据的字节数
+    // Calculate input data size
     size_t num_elements = input_tensor_values_.size();
     size_t byte_size = num_elements * sizeof(float);
 
-    // 1. 在GPU上分配内存
-    float *gpu_data = nullptr;
-    cudaError_t cudaStatus = cudaMalloc(reinterpret_cast<void **>(&gpu_data), byte_size);
-    if (cudaStatus != cudaSuccess) {
-        throw std::runtime_error("cudaMalloc failed");
-    }
+    // Get the CUDA memory manager instance
+    auto &cuda_manager = CUDAMemoryManager::getInstance();
 
-    // 2. 将CPU数据复制到GPU内存中
-    cudaStatus = cudaMemcpy(gpu_data, input_tensor_values_.data(), byte_size, cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        cudaFree(gpu_data);  // 出错时先释放已分配的内存
-        throw std::runtime_error("cudaMemcpy failed");
-    }
+    // 1. Allocate or reuse GPU memory
+    float *gpu_data = cuda_manager.allocateMemory(byte_size);
 
-    // 3. 使用CUDA创建MemoryInfo，device_id为0，请根据实际情况修改
+    // 2. Copy data to GPU
+    cuda_manager.copyToDevice(input_tensor_values_.data(), byte_size);
+
+    // 3. Create CUDA memory info
     Ort::MemoryInfo memory_info("Cuda", OrtAllocatorType::OrtArenaAllocator, 0, OrtMemTypeDefault);
 
-    // 利用GPU内存中的数据创建输入张量
+    // Create input tensor using GPU memory
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
         memory_info,
         gpu_data, num_elements,
         ModelInit::input_shape.data(), ModelInit::input_shape.size()
     );
 
-    // 4. 准备输入和输出的名称
+    // 4. Prepare input and output names
     auto input_name = mod.get_input_name().c_str();
     std::vector<const char *> output_names;
     for (const auto &str : mod.get_output_names()) {
         output_names.push_back(str.c_str());
     }
 
-    // 5. 运行模型推理
+    // 5. Run model inference
     std::vector<Ort::Value> output_tensors = session_->Run(
         Ort::RunOptions {nullptr},
         &input_name, &input_tensor, 1,
@@ -155,16 +151,16 @@ Ort::Value ImageInference::run_inference(ModelInit &mod) {
     );
 
 #if (!defined(NDEBUG))
-    // 调试：打印输出张量信息
+    // Debug: print output tensor info
     for (size_t i = 0; i < output_tensors.size(); i++) {
         print_tensor_info(output_tensors[i], output_names[i]);
     }
 #endif
 
-    // 6. 推理完成后释放GPU内存
-    cudaFree(gpu_data);
+    // Note: We don't free GPU memory here, as it will be reused in the next frame
+    // The memory will be freed when the CUDAMemoryManager is destroyed
 
-    // 返回第一个输出张量
+    // Return the first output tensor
     return std::move(output_tensors[0]);
 }
 

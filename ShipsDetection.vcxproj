@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\inference\CUDAMemoryManager.h" />
     <ClCompile Include="src\inference\DrawBoundingBox.cpp" />
     <ClCompile Include="src\inference\ImageInference.cpp" />
     <ClCompile Include="src\inference\ModelInit.cpp" />
