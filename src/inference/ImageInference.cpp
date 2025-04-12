@@ -87,38 +87,72 @@ cv::Mat ImageInference::preprocess_image() {
 }
 
 void ImageInference::convert_to_tensor() {
-    // 将HWC格式转为CHW格式，并存入成员变量 input_tensor_values_
-    input_tensor_values_.resize(1 * 3 * ModelInit::INPUT_WIDTH * ModelInit::INPUT_HEIGHT);
-    for (int c = 0; c < 3; ++c) {
-        for (int h = 0; h < ModelInit::INPUT_HEIGHT; ++h) {
-            for (int w = 0; w < ModelInit::INPUT_WIDTH; ++w) {
-                input_tensor_values_[c * ModelInit::INPUT_WIDTH * ModelInit::INPUT_HEIGHT +
-                    h * ModelInit::INPUT_WIDTH + w] = img_letterbox_.at<cv::Vec3f>(h, w)[c];
-            }
+    const int height = ModelInit::INPUT_HEIGHT;
+    const int width = ModelInit::INPUT_WIDTH;
+    const int img_size = height * width;
+
+    input_tensor_values_.resize(1 * 3 * img_size);
+
+    // 预先计算偏移量，避免重复计算
+    float *r_channel = input_tensor_values_.data();
+    float *g_channel = r_channel + img_size;
+    float *b_channel = g_channel + img_size;
+
+    // 单次遍历
+    for (int h = 0; h < height; ++h) {
+        for (int w = 0; w < width; ++w) {
+            const cv::Vec3f &pixel = img_letterbox_.at<cv::Vec3f>(h, w);
+            int offset = h * width + w;
+
+            r_channel[offset] = pixel[0];
+            g_channel[offset] = pixel[1];
+            b_channel[offset] = pixel[2];
         }
     }
 }
 
 Ort::Value ImageInference::run_inference(ModelInit &mod) {
-    //Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-    // 使用CUDA来创建MemoryInfo，device_id为0。如果你的GPU编号不同，请修改device_id
+    // 计算输入数据的字节数
+    size_t num_elements = input_tensor_values_.size();
+    size_t byte_size = num_elements * sizeof(float);
+
+    // 1. 在GPU上分配内存
+    float *gpu_data = nullptr;
+    cudaError_t cudaStatus = cudaMalloc(reinterpret_cast<void **>(&gpu_data), byte_size);
+    if (cudaStatus != cudaSuccess) {
+        throw std::runtime_error("cudaMalloc failed");
+    }
+
+    // 2. 将CPU数据复制到GPU内存中
+    cudaStatus = cudaMemcpy(gpu_data, input_tensor_values_.data(), byte_size, cudaMemcpyHostToDevice);
+    if (cudaStatus != cudaSuccess) {
+        cudaFree(gpu_data);  // 出错时先释放已分配的内存
+        throw std::runtime_error("cudaMemcpy failed");
+    }
+
+    // 3. 使用CUDA创建MemoryInfo，device_id为0，请根据实际情况修改
     Ort::MemoryInfo memory_info("Cuda", OrtAllocatorType::OrtArenaAllocator, 0, OrtMemTypeDefault);
 
-    // 需要确保 input_tensor_values_ 已经是GPU上或者可以从CPU到GPU自动拷贝的数据
+    // 利用GPU内存中的数据创建输入张量
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
         memory_info,
-        input_tensor_values_.data(), input_tensor_values_.size(),
-        ModelInit::input_shape.data(), ModelInit::input_shape.size());
+        gpu_data, num_elements,
+        ModelInit::input_shape.data(), ModelInit::input_shape.size()
+    );
 
+    // 4. 准备输入和输出的名称
     auto input_name = mod.get_input_name().c_str();
     std::vector<const char *> output_names;
     for (const auto &str : mod.get_output_names()) {
         output_names.push_back(str.c_str());
     }
 
-    std::vector<Ort::Value> output_tensors = session_->Run(Ort::RunOptions {nullptr},
+    // 5. 运行模型推理
+    std::vector<Ort::Value> output_tensors = session_->Run(
+        Ort::RunOptions {nullptr},
         &input_name, &input_tensor, 1,
-        output_names.data(), output_names.size());
+        output_names.data(), output_names.size()
+    );
 
 #if (!defined(NDEBUG))
     // 调试：打印输出张量信息
@@ -127,8 +161,41 @@ Ort::Value ImageInference::run_inference(ModelInit &mod) {
     }
 #endif
 
-    return std::move(output_tensors[0]);  // 返回第一个输出张量
+    // 6. 推理完成后释放GPU内存
+    cudaFree(gpu_data);
+
+    // 返回第一个输出张量
+    return std::move(output_tensors[0]);
 }
+
+//Ort::Value ImageInference::run_inference(ModelInit &mod) {
+//    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+//
+//    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
+//        memory_info,
+//        input_tensor_values_.data(), input_tensor_values_.size(),
+//        ModelInit::input_shape.data(), ModelInit::input_shape.size());
+//
+//    auto input_name = mod.get_input_name().c_str();
+//    std::vector<const char *> output_names;
+//    for (const auto &str : mod.get_output_names()) {
+//        output_names.push_back(str.c_str());
+//    }
+//
+//    std::vector<Ort::Value> output_tensors = session_->Run(
+//        Ort::RunOptions {nullptr},
+//        &input_name, &input_tensor, 1,
+//        output_names.data(), output_names.size());
+//
+//#if (!defined(NDEBUG))
+//    // 调试：打印输出张量信息
+//    for (size_t i = 0; i < output_tensors.size(); i++) {
+//        print_tensor_info(output_tensors[i], output_names[i]);
+//    }
+//#endif
+//
+//    return std::move(output_tensors[0]);  // 返回第一个输出张量
+//}
 
 void ImageInference::process_output(Ort::Value &output_tensor, float conf_threshold) {
     float *output_data = output_tensor.GetTensorMutableData<float>();

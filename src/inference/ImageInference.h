@@ -26,6 +26,10 @@ private:
 
     std::vector<int> indices_; // For NMS
 
+    // Allocate GPU Memory
+    float *gpu_data_;  // GPU内存指针
+    bool gpu_allocated_;  // 标记是否已分配GPU内存
+
     // 私有成员函数：每个步骤各自封装
     cv::Mat preprocess_image();
     void convert_to_tensor();

@@ -12,8 +12,8 @@ def inference_test():
 
 def inference_test_video():
     # 明确指定设备为CPU
-    model = YOLO('../runs/detect/train4/weights/best.pt')
-    cap = cv2.VideoCapture('../target_video/ship_video.mp4')
+    model = YOLO('./runs/detect/train4/weights/best.pt')
+    cap = cv2.VideoCapture('./target_video/ship_video.mp4')
     fps_input = cap.get(cv2.CAP_PROP_FPS)
 
     start_time = time.time()
