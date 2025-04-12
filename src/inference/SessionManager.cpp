@@ -42,7 +42,7 @@ SessionManager::SessionManager(const std::string &model_path) : env_(ORT_LOGGING
 #ifdef _WIN32
     session_ = std::make_unique<Ort::Session>(env_, char_to_wchar(model_path.c_str()), session_options);
 #else
-    session_ = std::make_unique<Ort::Session>(env, model_path.c_str(), session_options);
+    session_ = std::make_unique<Ort::Session>(env_, model_path.c_str(), session_options);
 #endif
 }
 

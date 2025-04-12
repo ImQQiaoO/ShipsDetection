@@ -30,8 +30,8 @@ private:
     cv::Mat preprocess_image();
     void convert_to_tensor();
     Ort::Value run_inference(ModelInit &mod);
-    void process_output(Ort::Value& output_tensor, float conf_threshold = 0.25f);
-    void NMS_boxes(float conf_threshold = 0.25f, float nms_threshold = 0.45f); 
+    void process_output(Ort::Value &output_tensor, float conf_threshold = 0.25f);
+    void NMS_boxes(float conf_threshold = 0.25f, float nms_threshold = 0.45f);
 
     // 工具函数
     static cv::Mat letterbox(const cv::Mat &img, const cv::Size &new_shape, float &scale, int &pad_w, int &pad_h);

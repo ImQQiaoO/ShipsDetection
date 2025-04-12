@@ -4,6 +4,8 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <opencv2/opencv.hpp>
+#include <cuda_runtime.h>
 
 /**
  * 这个函数的目的是将任意尺寸的输入图像调整为模型所需的固定尺寸（如640×640），
@@ -98,8 +100,13 @@ void ImageInference::convert_to_tensor() {
 }
 
 Ort::Value ImageInference::run_inference(ModelInit &mod) {
-    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+    //Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    // 使用CUDA来创建MemoryInfo，device_id为0。如果你的GPU编号不同，请修改device_id
+    Ort::MemoryInfo memory_info("Cuda", OrtAllocatorType::OrtArenaAllocator, 0, OrtMemTypeDefault);
+
+    // 需要确保 input_tensor_values_ 已经是GPU上或者可以从CPU到GPU自动拷贝的数据
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
+        memory_info,
         input_tensor_values_.data(), input_tensor_values_.size(),
         ModelInit::input_shape.data(), ModelInit::input_shape.size());
 
@@ -113,14 +120,14 @@ Ort::Value ImageInference::run_inference(ModelInit &mod) {
         &input_name, &input_tensor, 1,
         output_names.data(), output_names.size());
 
-    // 调试打印输出tensor信息
 #if (!defined(NDEBUG))
+    // 调试：打印输出张量信息
     for (size_t i = 0; i < output_tensors.size(); i++) {
         print_tensor_info(output_tensors[i], output_names[i]);
     }
 #endif
 
-    return std::move(output_tensors[0]);  // 返回第一个输出tensor
+    return std::move(output_tensors[0]);  // 返回第一个输出张量
 }
 
 void ImageInference::process_output(Ort::Value &output_tensor, float conf_threshold) {

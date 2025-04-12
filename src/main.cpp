@@ -14,6 +14,9 @@ void test_reg_video(Ort::Session *session, ModelInit &mod) {
         return;
     }
 
+    double input_fps = cap.get(cv::CAP_PROP_FPS);
+    std::cout << "视频输入帧率: " << input_fps << " FPS" << '\n';
+
     cv::Mat frame;
     int frame_count = 0;
     auto overall_start = std::chrono::high_resolution_clock::now();

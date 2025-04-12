@@ -11,6 +11,7 @@ def inference_test():
 
 
 def inference_test_video():
+    # 明确指定设备为CPU
     model = YOLO('../runs/detect/train4/weights/best.pt')
     cap = cv2.VideoCapture('../target_video/ship_video.mp4')
     fps_input = cap.get(cv2.CAP_PROP_FPS)
@@ -23,6 +24,8 @@ def inference_test_video():
         if not ret:
             break
 
+        # 也可以在推理时指定设备为CPU
+        # results = model(frame, verbose=False, device='cpu')
         results = model(frame, verbose=False)
         res = results[0]
         frame_with_boxes = res.plot()
@@ -41,6 +44,7 @@ def inference_test_video():
     print(f"实际处理帧率 (FPS): {actual_fps:.2f}")
     cap.release()
     cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
