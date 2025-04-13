@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QCoreApplication>
 #include <QPixmapCache>
+#include <QFileDialog>
 
 MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QWidget(parent), session_(session), mod_(mod), frame_count_(0), is_paused_(false),

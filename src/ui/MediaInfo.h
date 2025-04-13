@@ -15,11 +15,11 @@ public:
 
     // 设置视频信息
     void set_video_path(const QString &path) const;
-    void set_video_resolution(int width, int height);
-    void set_video_fps(double fps);
-    void set_frame_count(int count);
-    void update_current_fps(double fps);
-    void update_processed_frames(int count);
+    void set_video_resolution(int width, int height) const;
+    void set_video_fps(double fps) const;
+    void set_frame_count(int count) const;
+    void update_current_fps(double fps) const;
+    void update_processed_frames(int count) const;
 
 signals:
     void play_pause_clicked(bool play);

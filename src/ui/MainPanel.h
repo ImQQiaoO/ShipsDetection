@@ -13,11 +13,11 @@ public:
     ~MainPanel() override;
 
 private slots:
-    void on_frame_processed(int count);
-    void on_fps_updated(double fps);
+    void on_frame_processed(int count) const;
+    void on_fps_updated(double fps) const;
     void on_video_ended();
-    void on_play_pause_clicked(bool play);
-    void on_reset_clicked();
+    void on_play_pause_clicked(bool play) const;
+    void on_reset_clicked() const;
 
 private:
     MediaPlayer *media_player_;

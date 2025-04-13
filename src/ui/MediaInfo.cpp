@@ -18,7 +18,7 @@ MediaInfo::~MediaInfo() {
 
 void MediaInfo::setup_ui() {
     // 创建标题
-    title_label_ = new QLabel("视频信息面板", this);
+    title_label_ = new QLabel("媒体信息面板", this);
     QFont titleFont = title_label_->font();
     titleFont.setPointSize(14);
     titleFont.setBold(true);
@@ -43,7 +43,7 @@ void MediaInfo::setup_ui() {
 
     // 创建信息网格布局
     info_layout_ = new QGridLayout();
-    info_layout_->addWidget(new QLabel("视频信息:", this), 0, 0, 1, 2);
+    info_layout_->addWidget(new QLabel("媒体信息:", this), 0, 0, 1, 2);
     info_layout_->addWidget(path_label_, 1, 0, 1, 2);
     info_layout_->addWidget(resolution_label_, 2, 0);
     info_layout_->addWidget(fps_label_, 2, 1);
@@ -79,15 +79,15 @@ void MediaInfo::set_video_path(const QString &path) const {
     path_label_->setToolTip(path);
 }
 
-void MediaInfo::set_video_resolution(int width, int height) {
+void MediaInfo::set_video_resolution(int width, int height) const {
     resolution_label_->setText(QString("分辨率: %1 x %2").arg(width).arg(height));
 }
 
-void MediaInfo::set_video_fps(double fps) {
+void MediaInfo::set_video_fps(double fps) const {
     fps_label_->setText(QString("帧率: %1").arg(fps, 0, 'f', 1));
 }
 
-void MediaInfo::set_frame_count(int count) {
+void MediaInfo::set_frame_count(int count) const {
     if (count > 0) {
         frame_count_label_->setText(QString("总帧数: %1").arg(count));
     } else {
@@ -95,14 +95,13 @@ void MediaInfo::set_frame_count(int count) {
     }
 }
 
-void MediaInfo::update_current_fps(double fps) {
+void MediaInfo::update_current_fps(double fps) const {
     current_fps_label_->setText(QString("当前FPS: %1").arg(fps, 0, 'f', 1));
 }
 
-void MediaInfo::update_processed_frames(int count) {
+void MediaInfo::update_processed_frames(int count) const {
     processed_frames_label_->setText(QString("已处理帧数: %1").arg(count));
 }
-
 
 void MediaInfo::on_play_pause_clicked() {
     is_playing_ = !is_playing_;

@@ -10,6 +10,7 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <cuda_runtime.h>
+#include "CUDAMemoryManager.h"
 #include "src/utils/Locale.hpp"
 
 

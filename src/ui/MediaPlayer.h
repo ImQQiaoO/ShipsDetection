@@ -1,9 +1,11 @@
 ﻿#pragma once
-#include <QTimer>
 #include <QLabel>
+#include <QTimer>
+#include <QPushButton>
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 #include "src/inference/ModelInit.h"
+#include <chrono>
 
 class MediaPlayer : public QWidget {
     Q_OBJECT
@@ -21,7 +23,7 @@ public:
 
 public slots:
     void update_frame();
-    auto play_pause(bool play) -> void;
+    void play_pause(bool play);
 
 signals:
     void frame_processed(int count);

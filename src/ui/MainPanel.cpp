@@ -63,11 +63,11 @@ void MainPanel::setup_ui() {
     setCentralWidget(centralWidget);
 }
 
-void MainPanel::on_frame_processed(int count) {
+void MainPanel::on_frame_processed(int count) const {
     media_info_->update_processed_frames(count);
 }
 
-void MainPanel::on_fps_updated(double fps) {
+void MainPanel::on_fps_updated(double fps) const {
     media_info_->update_current_fps(fps);
 }
 
@@ -75,11 +75,11 @@ void MainPanel::on_video_ended() {
     // 可以添加视频结束时的处理逻辑
 }
 
-void MainPanel::on_play_pause_clicked(bool play) {
+void MainPanel::on_play_pause_clicked(bool play) const {
     media_player_->play_pause(play);
 }
 
-void MainPanel::on_reset_clicked() {
+void MainPanel::on_reset_clicked() const {
     media_player_->reset_video();
 }
 
