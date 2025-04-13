@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <opencv2/opencv.hpp>
 #include "src/utils/Locale.hpp"
+#include <QApplication>
+#include "src/ui/MainPanel.h"
 
 namespace fs = std::filesystem;
 
@@ -62,27 +64,33 @@ void reg_img(const fs::path &image_path, Ort::Session *session, ModelInit &mod) 
     cv::waitKey(1);
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     std::string model_path = "./runs/detect/train4/weights/best.onnx";
     SessionManager session_manager(model_path);
     Ort::Session *session = session_manager.get_session();
 
     ModelInit mod(session);
 
-    std::vector<const char *> output_names;
-    for (const auto &str : mod.get_output_names()) {
-        output_names.push_back(str.c_str());
-    }
+    //std::vector<const char *> output_names;
+    //for (const auto &str : mod.get_output_names()) {
+    //    output_names.push_back(str.c_str());
+    //}
 
-    std::string target_dir = "./target/";
-    for (const auto &entry : fs::directory_iterator(target_dir)) {
-        reg_img(entry.path(), session, mod);
-    }
-    cv::waitKey(0);
+    //std::string target_dir = "./target/";
+    //for (const auto &entry : fs::directory_iterator(target_dir)) {
+    //    reg_img(entry.path(), session, mod);
+    //}
+    //cv::waitKey(0);
 
-    reg_video(session, mod);
+    //reg_video(session, mod);
 
+    QApplication app(argc, argv);
 
-    return 0;
+    // 创建并显示视频播放器
+    MainPanel panel(session, mod);
+    panel.show();
+
+    return QApplication::exec();
+    
 }
 

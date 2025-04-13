@@ -120,8 +120,10 @@
     <ClInclude Include="src\inference\ImageInference.h" />
     <ClInclude Include="src\inference\ModelInit.h" />
     <ClInclude Include="src\inference\SessionManager.h" />
+    <QtMoc Include="src\ui\MediaInfo.h" />
+    <QtMoc Include="src\ui\MainPanel.h" />
     <ClInclude Include="src\utils\Locale.hpp" />
-    <QtMoc Include="src\ui\MainWindow.h" />
+    <QtMoc Include="src\ui\MediaPlayer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\inference\CUDAMemoryManager.cpp" />
@@ -130,6 +132,9 @@
     <ClCompile Include="src\inference\ModelInit.cpp" />
     <ClCompile Include="src\inference\SessionManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ui\MainPanel.cpp" />
+    <ClCompile Include="src\ui\MediaInfo.cpp" />
+    <ClCompile Include="src\ui\MediaPlayer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

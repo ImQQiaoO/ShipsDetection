@@ -1,0 +1,122 @@
+﻿#include "MediaInfo.h"
+#include <QFileInfo>
+
+MediaInfo::MediaInfo(QWidget *parent)
+    : QWidget(parent), is_playing_(true), elapsed_time_(0, 0, 0) {
+    setup_ui();
+
+    // 启动计时器，每秒更新一次时间
+    elapsed_timer_ = new QTimer(this);
+    connect(elapsed_timer_, &QTimer::timeout, this, &MediaInfo::update_elapsed_time);
+    elapsed_timer_->start(1000);
+}
+
+MediaInfo::~MediaInfo() {
+    elapsed_timer_->stop();
+    delete elapsed_timer_;
+}
+
+void MediaInfo::setup_ui() {
+    // 创建标题
+    title_label_ = new QLabel("视频信息面板", this);
+    QFont titleFont = title_label_->font();
+    titleFont.setPointSize(14);
+    titleFont.setBold(true);
+    title_label_->setFont(titleFont);
+
+    // 创建信息标签
+    path_label_ = new QLabel("路径: 未指定", this);
+    resolution_label_ = new QLabel("分辨率: 未知", this);
+    fps_label_ = new QLabel("帧率: 未知", this);
+    frame_count_label_ = new QLabel("总帧数: 未知", this);
+    current_fps_label_ = new QLabel("当前FPS: 0.0", this);
+    processed_frames_label_ = new QLabel("已处理帧数: 0", this);
+    elapsed_time_label_ = new QLabel("运行时间: 00:00:00", this);
+
+    // 创建按钮
+    play_pause_button_ = new QPushButton("暂停", this);
+    reset_button_ = new QPushButton("重置", this);
+
+    // 连接按钮信号
+    connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
+    connect(reset_button_, &QPushButton::clicked, this, &MediaInfo::reset_clicked);
+
+    // 创建信息网格布局
+    info_layout_ = new QGridLayout();
+    info_layout_->addWidget(new QLabel("视频信息:", this), 0, 0, 1, 2);
+    info_layout_->addWidget(path_label_, 1, 0, 1, 2);
+    info_layout_->addWidget(resolution_label_, 2, 0);
+    info_layout_->addWidget(fps_label_, 2, 1);
+    info_layout_->addWidget(frame_count_label_, 3, 0);
+    info_layout_->addWidget(elapsed_time_label_, 3, 1);
+
+    info_layout_->addWidget(new QLabel("运行状态:", this), 4, 0, 1, 2);
+    info_layout_->addWidget(current_fps_label_, 5, 0);
+    info_layout_->addWidget(processed_frames_label_, 5, 1);
+
+    // 创建按钮布局
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(play_pause_button_);
+    buttonLayout->addWidget(reset_button_);
+
+    // 创建主布局
+    main_layout_ = new QVBoxLayout(this);
+    main_layout_->addWidget(title_label_, 0, Qt::AlignCenter);
+    main_layout_->addLayout(info_layout_);
+    main_layout_->addStretch(1);
+    main_layout_->addLayout(buttonLayout);
+
+    // 设置样式
+    setStyleSheet(
+        "QLabel { font-size: 12px; }"
+        "QPushButton { font-size: 13px; padding: 6px 12px; }"
+    );
+}
+
+void MediaInfo::set_video_path(const QString &path) const {
+    QFileInfo fileInfo(path);
+    path_label_->setText("路径: " + fileInfo.fileName());
+    path_label_->setToolTip(path);
+}
+
+void MediaInfo::set_video_resolution(int width, int height) {
+    resolution_label_->setText(QString("分辨率: %1 x %2").arg(width).arg(height));
+}
+
+void MediaInfo::set_video_fps(double fps) {
+    fps_label_->setText(QString("帧率: %1").arg(fps, 0, 'f', 1));
+}
+
+void MediaInfo::set_frame_count(int count) {
+    if (count > 0) {
+        frame_count_label_->setText(QString("总帧数: %1").arg(count));
+    } else {
+        frame_count_label_->setText("总帧数: 未知");
+    }
+}
+
+void MediaInfo::update_current_fps(double fps) {
+    current_fps_label_->setText(QString("当前FPS: %1").arg(fps, 0, 'f', 1));
+}
+
+void MediaInfo::update_processed_frames(int count) {
+    processed_frames_label_->setText(QString("已处理帧数: %1").arg(count));
+}
+
+
+void MediaInfo::on_play_pause_clicked() {
+    is_playing_ = !is_playing_;
+    if (is_playing_) {
+        play_pause_button_->setText("暂停");
+        elapsed_timer_->start();
+    } else {
+        play_pause_button_->setText("播放");
+        elapsed_timer_->stop();
+    }
+    emit play_pause_clicked(is_playing_);
+}
+
+void MediaInfo::update_elapsed_time() {
+    elapsed_time_ = elapsed_time_.addSecs(1);
+    elapsed_time_label_->setText(QString("运行时间: %1").arg(elapsed_time_.toString("hh:mm:ss")));
+}
