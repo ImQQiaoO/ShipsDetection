@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "DrawBoundingBox.h"
+#include "src/utils/Locale.hpp"
 
 const std::vector<std::array<double, 4>> DrawBoundingBox::box_color = {
     // IN OPENCV IT IS BGRY
@@ -33,7 +34,7 @@ void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const 
         int class_id = class_ids[idx];
 
 #if (!defined(NDEBUG))
-        std::cout << "检测框: x=" << box.x << ", y=" << box.y
+        utils::utf2ansi_out << "检测框: x=" << box.x << ", y=" << box.y
             << ", width=" << box.width << ", height=" << box.height
             << ", class=" << class_id << ", conf=" << conf << '\n';
 #endif

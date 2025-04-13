@@ -1,31 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShipsDetection", "ShipsDetection.vcxproj", "{BE88B6C0-45E4-4983-BA5E-1B8C27098238}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShipsDetection", "ShipsDetection.vcxproj", "{AEC0C160-BA76-40A3-BEA2-8489DF9C4E03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Debug|x64.ActiveCfg = Debug|x64
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Debug|x64.Build.0 = Debug|x64
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Debug|x86.ActiveCfg = Debug|Win32
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Debug|x86.Build.0 = Debug|Win32
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Release|x64.ActiveCfg = Release|x64
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Release|x64.Build.0 = Release|x64
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Release|x86.ActiveCfg = Release|Win32
-		{BE88B6C0-45E4-4983-BA5E-1B8C27098238}.Release|x86.Build.0 = Release|Win32
+		{AEC0C160-BA76-40A3-BEA2-8489DF9C4E03}.Debug|x64.ActiveCfg = Debug|x64
+		{AEC0C160-BA76-40A3-BEA2-8489DF9C4E03}.Debug|x64.Build.0 = Debug|x64
+		{AEC0C160-BA76-40A3-BEA2-8489DF9C4E03}.Release|x64.ActiveCfg = Release|x64
+		{AEC0C160-BA76-40A3-BEA2-8489DF9C4E03}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C2F88F08-4297-4C4D-897E-1DEF2F2B9571}
+		SolutionGuid = {A0784153-D261-4D50-821E-246F3B3CB84B}
 	EndGlobalSection
 EndGlobal

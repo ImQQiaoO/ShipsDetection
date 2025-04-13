@@ -3,19 +3,20 @@
 #include "inference/ImageInference.h"
 #include <filesystem>
 #include <opencv2/opencv.hpp>
+#include "src/utils/Locale.hpp"
 
 namespace fs = std::filesystem;
 
-void test_reg_video(Ort::Session *session, ModelInit &mod) {
+void reg_video(Ort::Session *session, ModelInit &mod) {
     std::string video_path = "./target_video/ship_video.mp4";
     cv::VideoCapture cap(video_path);
     if (!cap.isOpened()) {
-        std::cerr << "无法打开视频文件: " << video_path << '\n';
+        utils::utf2ansi_out << "无法打开视频文件: " << video_path << '\n';
         return;
     }
 
     double input_fps = cap.get(cv::CAP_PROP_FPS);
-    std::cout << "视频输入帧率: " << input_fps << " FPS" << '\n';
+    utils::utf2ansi_out << "视频输入帧率: " << input_fps << " FPS" << '\n';
 
     cv::Mat frame;
     int frame_count = 0;
@@ -26,7 +27,7 @@ void test_reg_video(Ort::Session *session, ModelInit &mod) {
         ImageInference image_inference(frame, session, mod);
         image_inference.draw_bounding_box();
 
-        cv::imshow("视频帧", frame);
+        cv::imshow("Video Frame", frame);
         ++frame_count;
 
         if (cv::waitKey(1) >= 0)
@@ -37,13 +38,29 @@ void test_reg_video(Ort::Session *session, ModelInit &mod) {
     double total_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(overall_end - overall_start).count();
     double average_fps = (frame_count > 0) ? (frame_count * 1000.0 / total_time_ms) : 0;
 
-    std::cout << "处理了 " << frame_count << " 帧, 总耗时："
+    utils::utf2ansi_out << "处理了 " << frame_count << " 帧, 总耗时："
         << total_time_ms << " ms, 平均帧率：" << average_fps << " FPS" << '\n';
 
     cap.release();
     cv::destroyAllWindows();
 }
 
+// 识别整个文件夹的
+void reg_img(const fs::path &image_path, Ort::Session *session, ModelInit &mod) {
+    utils::utf2ansi_out << "处理图片: " << image_path << '\n';
+    cv::Mat img = cv::imread(image_path.string());
+    if (img.empty()) {
+        std::cerr << "无法读取图片: " << image_path << '\n';
+        return;
+    }
+    ImageInference image_inference(img, session, mod);
+    image_inference.draw_bounding_box();
+
+    std::string window_name = utils::utf8_to_ansi("检测结果 - " + image_path.filename().string());
+    cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
+    cv::imshow(window_name, img);
+    cv::waitKey(1);
+}
 
 int main() {
     std::string model_path = "./runs/detect/train4/weights/best.onnx";
@@ -52,31 +69,18 @@ int main() {
 
     ModelInit mod(session);
 
-    //std::vector<const char *> output_names;
-    //for (const auto &str : mod.get_output_names()) {
-    //    output_names.push_back(str.c_str());
-    //}
+    std::vector<const char *> output_names;
+    for (const auto &str : mod.get_output_names()) {
+        output_names.push_back(str.c_str());
+    }
 
-    //std::string target_dir = "./target/";
-    //for (const auto &entry : fs::directory_iterator(target_dir)) {
-    //    std::string image_path = entry.path().string();
-    //    std::cout << "处理图片: " << image_path << '\n';
-    //    cv::Mat img = cv::imread(image_path);
-    //    if (img.empty()) {
-    //        std::cerr << "无法读取图片: " << image_path << '\n';
-    //        continue;
-    //    }
-    //    ImageInference image_inference(img, session, mod);
-    //    image_inference.draw_bounding_box();
+    std::string target_dir = "./target/";
+    for (const auto &entry : fs::directory_iterator(target_dir)) {
+        reg_img(entry.path(), session, mod);
+    }
+    cv::waitKey(0);
 
-    //    std::string window_name = "检测结果 - " + entry.path().filename().string();
-    //    cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
-    //    cv::imshow(window_name, img);
-    //    cv::waitKey(1);
-    //}
-    //cv::waitKey(0);
-
-    test_reg_video(session, mod);
+    reg_video(session, mod);
 
 
     return 0;

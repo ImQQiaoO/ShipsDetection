@@ -1,4 +1,8 @@
-﻿#include <onnxruntime_cxx_api.h>
+﻿#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+#include <onnxruntime_cxx_api.h>
 #include "ImageInference.h"
 #include "DrawBoundingBox.h"
 #include <iostream>
@@ -6,7 +10,8 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <cuda_runtime.h>
-#include "CUDAMemoryManager.h"
+#include "src/utils/Locale.hpp"
+
 
 /**
  * 这个函数的目的是将任意尺寸的输入图像调整为模型所需的固定尺寸（如640×640），
@@ -60,11 +65,12 @@ void ImageInference::print_tensor_info(const Ort::Value &tensor, const char *nam
 
 // 构造函数
 ImageInference::ImageInference(cv::Mat img, Ort::Session *session, ModelInit &mod) : img_(std::move(img)), session_(session) {
+
     // 保存原图尺寸
     orig_w_ = img_.cols;
     orig_h_ = img_.rows;
 #if (!defined(NDEBUG))
-    std::cout << "原图尺寸: " << orig_w_ << "x" << orig_h_ << '\n';
+    utils::utf2ansi_out << "原图尺寸: " << orig_w_ << "x" << orig_h_ << '\n';
 #endif
     img_letterbox_ = preprocess_image();                // STEP1: 图像预处理（包括 letterbox）
     convert_to_tensor();                                // STEP2: 转换为tensor格式
@@ -77,7 +83,7 @@ cv::Mat ImageInference::preprocess_image() {
     // 使用 letterbox 调整图片大小
     cv::Mat img_lb = letterbox(img_, cv::Size(ModelInit::INPUT_WIDTH, ModelInit::INPUT_HEIGHT), scale_, pad_w_, pad_h_);
 #if (!defined(NDEBUG))
-    std::cout << "Letterbox信息: scale=" << scale_ << ", pad_w=" << pad_w_ << ", pad_h=" << pad_h_ << '\n';
+    utils::utf2ansi_out << "Letterbox信息: scale=" << scale_ << ", pad_w=" << pad_w_ << ", pad_h=" << pad_h_ << '\n';
 #endif
     // 预处理：归一化、BGR -> RGB
     cv::Mat blob;
@@ -112,86 +118,85 @@ void ImageInference::convert_to_tensor() {
     }
 }
 
-Ort::Value ImageInference::run_inference(ModelInit &mod) {
-    // Calculate input data size
-    size_t num_elements = input_tensor_values_.size();
-    size_t byte_size = num_elements * sizeof(float);
-
-    // Get the CUDA memory manager instance
-    auto &cuda_manager = CUDAMemoryManager::getInstance();
-
-    // 1. Allocate or reuse GPU memory
-    float *gpu_data = cuda_manager.allocateMemory(byte_size);
-
-    // 2. Copy data to GPU
-    cuda_manager.copyToDevice(input_tensor_values_.data(), byte_size);
-
-    // 3. Create CUDA memory info
-    Ort::MemoryInfo memory_info("Cuda", OrtAllocatorType::OrtArenaAllocator, 0, OrtMemTypeDefault);
-
-    // Create input tensor using GPU memory
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
-        memory_info,
-        gpu_data, num_elements,
-        ModelInit::input_shape.data(), ModelInit::input_shape.size()
-    );
-
-    // 4. Prepare input and output names
-    auto input_name = mod.get_input_name().c_str();
-    std::vector<const char *> output_names;
-    for (const auto &str : mod.get_output_names()) {
-        output_names.push_back(str.c_str());
-    }
-
-    // 5. Run model inference
-    std::vector<Ort::Value> output_tensors = session_->Run(
-        Ort::RunOptions {nullptr},
-        &input_name, &input_tensor, 1,
-        output_names.data(), output_names.size()
-    );
-
-#if (!defined(NDEBUG))
-    // Debug: print output tensor info
-    for (size_t i = 0; i < output_tensors.size(); i++) {
-        print_tensor_info(output_tensors[i], output_names[i]);
-    }
-#endif
-
-    // Note: We don't free GPU memory here, as it will be reused in the next frame
-    // The memory will be freed when the CUDAMemoryManager is destroyed
-
-    // Return the first output tensor
-    return std::move(output_tensors[0]);
-}
-
 //Ort::Value ImageInference::run_inference(ModelInit &mod) {
-//    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+//    // Calculate input data size
+//    size_t num_elements = input_tensor_values_.size();
+//    size_t byte_size = num_elements * sizeof(float);
 //
+//    // Get the CUDA memory manager instance
+//    auto &cuda_manager = CUDAMemoryManager::getInstance();
+//
+//    // 1. Allocate or reuse GPU memory
+//    float *gpu_data = cuda_manager.allocateMemory(byte_size);
+//
+//    // 2. Copy data to GPU
+//    cuda_manager.copyToDevice(input_tensor_values_.data(), byte_size);
+//
+//    // 3. Create CUDA memory info
+//    Ort::MemoryInfo memory_info("Cuda", OrtAllocatorType::OrtArenaAllocator, 0, OrtMemTypeDefault);
+//
+//    // Create input tensor using GPU memory
 //    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
 //        memory_info,
-//        input_tensor_values_.data(), input_tensor_values_.size(),
-//        ModelInit::input_shape.data(), ModelInit::input_shape.size());
+//        gpu_data, num_elements,
+//        ModelInit::input_shape.data(), ModelInit::input_shape.size()
+//    );
 //
+//    // 4. Prepare input and output names
 //    auto input_name = mod.get_input_name().c_str();
 //    std::vector<const char *> output_names;
 //    for (const auto &str : mod.get_output_names()) {
 //        output_names.push_back(str.c_str());
 //    }
 //
+//    // 5. Run model inference
 //    std::vector<Ort::Value> output_tensors = session_->Run(
 //        Ort::RunOptions {nullptr},
 //        &input_name, &input_tensor, 1,
-//        output_names.data(), output_names.size());
+//        output_names.data(), output_names.size()
+//    );
 //
 //#if (!defined(NDEBUG))
-//    // 调试：打印输出张量信息
+//    // Debug: print output tensor info
 //    for (size_t i = 0; i < output_tensors.size(); i++) {
 //        print_tensor_info(output_tensors[i], output_names[i]);
 //    }
 //#endif
 //
-//    return std::move(output_tensors[0]);  // 返回第一个输出张量
+//    // Note: We don't free GPU memory here, as it will be reused in the next frame
+//    // The memory will be freed when the CUDAMemoryManager is destroyed
+//
+//    // Return the first output tensor
+//    return std::move(output_tensors[0]);
 //}
+
+Ort::Value ImageInference::run_inference(ModelInit &mod) {
+    Ort::MemoryInfo memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(
+        memory_info,
+        input_tensor_values_.data(), input_tensor_values_.size(),
+        ModelInit::input_shape.data(), ModelInit::input_shape.size());
+
+    auto input_name = mod.get_input_name().c_str();
+    std::vector<const char *> output_names;
+    for (const auto &str : mod.get_output_names()) {
+        output_names.push_back(str.c_str());
+    }
+
+    std::vector<Ort::Value> output_tensors = session_->Run(
+        Ort::RunOptions {nullptr},
+        &input_name, &input_tensor, 1,
+        output_names.data(), output_names.size());
+
+#if (!defined(NDEBUG))
+    // 调试：打印输出张量信息
+    for (size_t i = 0; i < output_tensors.size(); i++) {
+        print_tensor_info(output_tensors[i], output_names[i]);
+    }
+#endif
+
+    return std::move(output_tensors[0]);  // 返回第一个输出张量
+}
 
 void ImageInference::process_output(Ort::Value &output_tensor, float conf_threshold) {
     float *output_data = output_tensor.GetTensorMutableData<float>();
@@ -201,7 +206,7 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
     int64_t dimensions = output_shape[1];
     int64_t num_boxes = output_shape[2];
 #if (!defined(NDEBUG))
-    std::cout << "输出维度: " << dimensions << ", 框数量: " << num_boxes << '\n';
+    utils::utf2ansi_out << "输出维度: " << dimensions << ", 框数量: " << num_boxes << '\n';
 #endif
     // 遍历每个检测框并提取有效候选框
     for (int i = 0; i < num_boxes; ++i) {
@@ -223,7 +228,7 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
         float w = output_data[2 * num_boxes + i];
         float h = output_data[3 * num_boxes + i];
 #if (!defined(NDEBUG))
-        std::cout << "原始检测结果: x=" << x << ", y=" << y << ", w=" << w << ", h=" << h
+        utils::utf2ansi_out << "原始检测结果: x=" << x << ", y=" << y << ", w=" << w << ", h=" << h
             << ", class=" << class_id << ", score=" << max_class_score << '\n';
 #endif
         // 将 letterbox 坐标映射回原图
@@ -244,7 +249,7 @@ void ImageInference::process_output(Ort::Value &output_tensor, float conf_thresh
         confidences_.push_back(max_class_score);
         class_ids_.push_back(class_id);
 #if (!defined(NDEBUG))
-        std::cout << "转换后: left=" << left << ", top=" << top << ", width=" << box_w << ", height=" << box_h << '\n';
+        utils::utf2ansi_out << "转换后: left=" << left << ", top=" << top << ", width=" << box_w << ", height=" << box_h << '\n';
 #endif
 
     }

@@ -2,12 +2,11 @@
 #include <opencv2/opencv.hpp>
 #include <onnxruntime_cxx_api.h>
 #include <filesystem>
-#include <vector>
-#include <algorithm>
 #include "SessionManager.h"
+#include "src/utils/Locale.hpp"
+
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <windows.h>
 const wchar_t *char_to_wchar(const char *char_str) {
     if (char_str == nullptr) return nullptr;
@@ -35,8 +34,8 @@ SessionManager::SessionManager(const std::string &model_path) : env_(ORT_LOGGING
         session_options.AppendExecutionProvider_CUDA(cuda_options);
         session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
     } catch (const Ort::Exception &e) {
-        std::cout << "ONNX Runtime异常: " << e.what() << '\n';
-        std::cout << "错误代码: " << e.GetOrtErrorCode() << '\n';
+        utils::utf2ansi_out << "ONNX Runtime异常: " << e.what() << '\n';
+        utils::utf2ansi_out << "错误代码: " << e.GetOrtErrorCode() << '\n';
     }
 
 #ifdef _WIN32

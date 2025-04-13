@@ -1,5 +1,5 @@
 ﻿#include "ModelInit.h"
-#include <iostream>
+#include "src/utils/Locale.hpp"
 
 const std::vector<int64_t> ModelInit::input_shape = {
     1,              /* 批处理大小 */
@@ -25,7 +25,7 @@ void ModelInit::init_inference(const Ort::Session *session) {
     // 获取输入节点名称，并保存其拷贝到 string
     auto input_name_alloc = session->GetInputNameAllocated(0, *allocator_);
     input_name_ = std::string(input_name_alloc.get());
-    std::cout << "输入名称: " << input_name_ << '\n';
+    utils::utf2ansi_out << "输入名称: " << input_name_ << '\n';
 
     // 获取输出节点名称
     size_t output_count = session->GetOutputCount();
@@ -33,6 +33,6 @@ void ModelInit::init_inference(const Ort::Session *session) {
     for (size_t i = 0; i < output_count; i++) {
         auto output_name_alloc = session->GetOutputNameAllocated(i, *allocator_);
         output_names_[i] = std::string(output_name_alloc.get());
-        std::cout << "输出名称 " << i << ": " << output_names_[i] << '\n';
+        utils::utf2ansi_out << "输出名称 " << i << ": " << output_names_[i] << '\n';
     }
 }
