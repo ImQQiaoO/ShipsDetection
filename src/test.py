@@ -25,8 +25,8 @@ def inference_test_video():
             break
 
         # 也可以在推理时指定设备为CPU
-        # results = model(frame, verbose=False, device='cpu')
-        results = model(frame, verbose=False)
+        results = model(frame, verbose=False, device='cpu')
+        # results = model(frame, verbose=False)
         res = results[0]
         frame_with_boxes = res.plot()
         cv2.imshow('Inference Video', frame_with_boxes)
@@ -49,7 +49,8 @@ def inference_test_video():
 
 if __name__ == '__main__':
     # inference_test()
-    inference_test_video()
+   inference_test_video()
+        
 
 # 检测框: x=254, y=234, width=878, height=322
 # 检测框: x=398, y=357, width=338, height=115

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <QMainWindow>
 #include <QSplitter>
+#include <QFileDialog>
 #include "MediaPlayer.h"
 #include "MediaInfo.h"
 #include "src/inference/ModelInit.h"
@@ -18,6 +19,7 @@ private slots:
     void on_video_ended();
     void on_play_pause_clicked(bool play) const;
     void on_reset_clicked() const;
+    void on_open_file_clicked(); // 新增：处理打开文件按钮点击
 
 private:
     MediaPlayer *media_player_;

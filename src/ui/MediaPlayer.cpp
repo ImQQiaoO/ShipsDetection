@@ -162,6 +162,5 @@ QImage MediaPlayer::mat_to_qimage(const cv::Mat &mat) {
     } else {
         return {}; // 不支持的格式
     }
-
     return qImage.copy(); // 仍然需要复制以确保安全
 }

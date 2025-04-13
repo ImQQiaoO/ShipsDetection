@@ -2,6 +2,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWidget>
+#include <QMessageBox>
 
 MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QMainWindow(parent) {
@@ -24,6 +25,7 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
 
     connect(media_info_, &MediaInfo::play_pause_clicked, this, &MainPanel::on_play_pause_clicked);
     connect(media_info_, &MediaInfo::reset_clicked, this, &MainPanel::on_reset_clicked);
+    connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked); // 新增：连接打开文件信号
 
     // 设置视频信息
     cv::VideoCapture &cap = media_player_->get_cap();
@@ -73,6 +75,7 @@ void MainPanel::on_fps_updated(double fps) const {
 
 void MainPanel::on_video_ended() {
     // 可以添加视频结束时的处理逻辑
+    QMessageBox::information(this, "视频播放", "视频播放已结束");
 }
 
 void MainPanel::on_play_pause_clicked(bool play) const {
@@ -83,3 +86,24 @@ void MainPanel::on_reset_clicked() const {
     media_player_->reset_video();
 }
 
+void MainPanel::on_open_file_clicked() {
+    // 打开文件选择对话框
+    QString file_path = QFileDialog::getOpenFileName(
+        this,
+        "选择视频文件",
+        QDir::homePath(),  // 从用户主目录开始
+        "视频文件 (*.mp4 *.avi *.mkv *.mov);;所有文件 (*.*)"
+    );
+
+    // 如果用户选择了文件
+    if (!file_path.isEmpty()) {
+        // 更新媒体播放器的视频路径
+        media_player_->set_video_path(file_path.toStdString());
+
+        // 更新信息面板中的文件路径
+        media_info_->set_video_path(file_path);
+
+        // 重置视频播放
+        media_player_->reset_video();
+    }
+}

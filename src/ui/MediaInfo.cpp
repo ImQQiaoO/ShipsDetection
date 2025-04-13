@@ -1,5 +1,6 @@
 ﻿#include "MediaInfo.h"
 #include <QFileInfo>
+#include <QStyle>
 
 MediaInfo::MediaInfo(QWidget *parent)
     : QWidget(parent), is_playing_(true), elapsed_time_(0, 0, 0) {
@@ -36,10 +37,13 @@ void MediaInfo::setup_ui() {
     // 创建按钮
     play_pause_button_ = new QPushButton("暂停", this);
     reset_button_ = new QPushButton("重置", this);
+    open_file_button_ = new QPushButton("选择视频文件", this);
+    open_file_button_->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton)); // 添加文件图标
 
     // 连接按钮信号
     connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
     connect(reset_button_, &QPushButton::clicked, this, &MediaInfo::reset_clicked);
+    connect(open_file_button_, &QPushButton::clicked, this, &MediaInfo::on_open_file_clicked);
 
     // 创建信息网格布局
     info_layout_ = new QGridLayout();
@@ -55,16 +59,22 @@ void MediaInfo::setup_ui() {
     info_layout_->addWidget(processed_frames_label_, 5, 1);
 
     // 创建按钮布局
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(play_pause_button_);
-    buttonLayout->addWidget(reset_button_);
+    QHBoxLayout *control_layout = new QHBoxLayout();
+    control_layout->addWidget(play_pause_button_);
+    control_layout->addWidget(reset_button_);
+
+    // 创建文件按钮布局
+    QHBoxLayout *file_layout = new QHBoxLayout();
+    file_layout->addWidget(open_file_button_);
+    file_layout->addStretch(); // 添加弹性空间，使按钮靠左
 
     // 创建主布局
     main_layout_ = new QVBoxLayout(this);
     main_layout_->addWidget(title_label_, 0, Qt::AlignCenter);
     main_layout_->addLayout(info_layout_);
     main_layout_->addStretch(1);
-    main_layout_->addLayout(buttonLayout);
+    main_layout_->addLayout(file_layout); // 先添加文件按钮
+    main_layout_->addLayout(control_layout); // 再添加控制按钮
 
     // 设置样式
     setStyleSheet(
@@ -113,6 +123,11 @@ void MediaInfo::on_play_pause_clicked() {
         elapsed_timer_->stop();
     }
     emit play_pause_clicked(is_playing_);
+}
+
+void MediaInfo::on_open_file_clicked() {
+    // 发出打开文件信号，由MainPanel处理
+    emit open_file_clicked();
 }
 
 void MediaInfo::update_elapsed_time() {

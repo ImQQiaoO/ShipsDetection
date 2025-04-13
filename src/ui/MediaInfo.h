@@ -24,9 +24,11 @@ public:
 signals:
     void play_pause_clicked(bool play);
     void reset_clicked();
+    void open_file_clicked(); // 新增信号：打开文件按钮被点击
 
 private slots:
     void on_play_pause_clicked();
+    void on_open_file_clicked(); // 新增槽函数：处理打开文件按钮点击
     void update_elapsed_time();
 
 private:
@@ -41,6 +43,7 @@ private:
     QLabel *elapsed_time_label_;
     QPushButton *play_pause_button_;
     QPushButton *reset_button_;
+    QPushButton *open_file_button_; // 新增：文件选择按钮
 
     // 布局
     QVBoxLayout *main_layout_;
