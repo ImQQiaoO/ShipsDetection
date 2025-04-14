@@ -14,6 +14,7 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     // 创建视频播放器和信息面板
     media_player_ = new MediaPlayer(session, mod, this);
     media_info_ = new MediaInfo(this);
+    log_panel_ = new LogPanel(this); // 创建日志面板
 
     // 设置UI布局
     setup_ui();
@@ -23,9 +24,13 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     connect(media_player_, &MediaPlayer::fps_updated, this, &MainPanel::on_fps_updated);
     connect(media_player_, &MediaPlayer::video_ended, this, &MainPanel::on_video_ended);
 
+    // 假设 MediaPlayer 类有一个 ship_detected 信号
+    // 如果没有，需要在 MediaPlayer 中添加这个信号
+    // connect(media_player_, &MediaPlayer::ship_detected, this, &MainPanel::on_ship_detected);
+
     connect(media_info_, &MediaInfo::play_pause_clicked, this, &MainPanel::on_play_pause_clicked);
     connect(media_info_, &MediaInfo::reset_clicked, this, &MainPanel::on_reset_clicked);
-    connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked); // 新增：连接打开文件信号
+    connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked);
 
     // 设置视频信息
     cv::VideoCapture &cap = media_player_->get_cap();
@@ -40,7 +45,13 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
         media_info_->set_video_fps(fps);
         media_info_->set_frame_count(totalFrames);
     }
+
+    // 添加一些测试日志（可选）
+    // log_panel_->add_ship_log("货船", 95, QPoint(320, 240));
+    // log_panel_->add_ship_log("渔船", 85, QPoint(450, 300));
+    // log_panel_->add_ship_log("未知船只", 65, QPoint(200, 180));
 }
+
 
 MainPanel::~MainPanel() {
     // QMainWindow 会自动删除子部件
@@ -55,9 +66,25 @@ void MainPanel::setup_ui() {
     splitter_ = new QSplitter(Qt::Horizontal);
     mainLayout->addWidget(splitter_);
 
-    // 将视频播放器和信息面板添加到分割器
+    // 创建右侧面板容器
+    QWidget *rightPanel = new QWidget();
+    QVBoxLayout *rightLayout = new QVBoxLayout(rightPanel);
+
+    // 将信息面板和日志面板添加到右侧布局
+    rightLayout->addWidget(media_info_);
+    rightLayout->addWidget(log_panel_);
+
+    // 设置右侧面板的大小策略
+    media_info_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    log_panel_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    // 设置垂直布局的拉伸因子
+    rightLayout->addWidget(media_info_, 2);
+    rightLayout->addWidget(log_panel_, 4);
+
+    // 将视频播放器和右侧面板添加到分割器
     splitter_->addWidget(media_player_);
-    splitter_->addWidget(media_info_);
+    splitter_->addWidget(rightPanel);
 
     // 设置初始分割比例为2:1 (左:右)
     splitter_->setSizes(QList<int>() << 800 << 400);
@@ -106,4 +133,9 @@ void MainPanel::on_open_file_clicked() {
         // 重置视频播放
         media_player_->reset_video();
     }
+}
+
+void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) {
+    // 将检测到的船舶信息添加到日志面板
+    log_panel_->add_ship_log(ship_type, confidence, position);
 }

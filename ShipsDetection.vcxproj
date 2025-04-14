@@ -122,6 +122,7 @@
     <ClInclude Include="src\inference\SessionManager.h" />
     <QtMoc Include="src\ui\MediaInfo.h" />
     <QtMoc Include="src\ui\MainPanel.h" />
+    <QtMoc Include="src\ui\LogPanel.h" />
     <ClInclude Include="src\utils\Locale.hpp" />
     <QtMoc Include="src\ui\MediaPlayer.h" />
   </ItemGroup>
@@ -132,6 +133,7 @@
     <ClCompile Include="src\inference\ModelInit.cpp" />
     <ClCompile Include="src\inference\SessionManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ui\LogPanel.cpp" />
     <ClCompile Include="src\ui\MainPanel.cpp" />
     <ClCompile Include="src\ui\MediaInfo.cpp" />
     <ClCompile Include="src\ui\MediaPlayer.cpp" />
