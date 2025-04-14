@@ -40,6 +40,9 @@ void MediaInfo::setup_ui() {
     open_file_button_ = new QPushButton("选择视频文件", this);
     open_file_button_->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton)); // 添加文件图标
 
+    open_file_button_->setMinimumWidth(380); // 设置最小宽度
+    open_file_button_->setMinimumHeight(35); // 设置最小高度
+
     // 连接按钮信号
     connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
     connect(reset_button_, &QPushButton::clicked, this, &MediaInfo::reset_clicked);
@@ -58,23 +61,30 @@ void MediaInfo::setup_ui() {
     info_layout_->addWidget(current_fps_label_, 5, 0);
     info_layout_->addWidget(processed_frames_label_, 5, 1);
 
-    // 创建按钮布局
-    QHBoxLayout *control_layout = new QHBoxLayout();
-    control_layout->addWidget(play_pause_button_);
-    control_layout->addWidget(reset_button_);
-
     // 创建文件按钮布局
     QHBoxLayout *file_layout = new QHBoxLayout();
     file_layout->addWidget(open_file_button_);
     file_layout->addStretch(); // 添加弹性空间，使按钮靠左
 
+    // 创建按钮布局
+    QHBoxLayout *control_layout = new QHBoxLayout();
+    control_layout->addWidget(play_pause_button_);
+    control_layout->addWidget(reset_button_);
+
     // 创建主布局
     main_layout_ = new QVBoxLayout(this);
     main_layout_->addWidget(title_label_, 0, Qt::AlignCenter);
     main_layout_->addLayout(info_layout_);
+
+    // 添加一个小间距
+    main_layout_->addSpacing(10);
+
+    // 添加按钮布局，紧跟在信息部分之后
+    main_layout_->addLayout(file_layout);
+    main_layout_->addLayout(control_layout);
+
+    // 添加弹性空间，将所有内容推向顶部
     main_layout_->addStretch(1);
-    main_layout_->addLayout(file_layout); // 先添加文件按钮
-    main_layout_->addLayout(control_layout); // 再添加控制按钮
 
     // 设置样式
     setStyleSheet(

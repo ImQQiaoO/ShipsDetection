@@ -18,7 +18,19 @@ void reg_video(Ort::Session *session, ModelInit &mod) {
     }
 
     double input_fps = cap.get(cv::CAP_PROP_FPS);
-    utils::utf2ansi_out << "视频输入帧率: " << input_fps << " FPS" << '\n';
+    int width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));  // 获取视频宽度
+    int height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));  // 获取视频高度
+    utils::utf2ansi_out << "视频输入帧率: " << input_fps << " FPS, 分辨率: " << width << "x" << height << '\n';
+
+    //// 创建 VideoWriter 对象用于保存输出视频
+    //std::string output_video_path = "./target_video/93986399-1-06_output.mp4";
+    //cv::VideoWriter writer(output_video_path, cv::VideoWriter::fourcc('X', '2', '6', '4'), input_fps, cv::Size(width, height));
+
+
+    //if (!writer.isOpened()) {
+    //    utils::utf2ansi_out << "无法打开视频写入器: " << output_video_path << '\n';
+    //    return;
+    //}
 
     cv::Mat frame;
     int frame_count = 0;
@@ -28,6 +40,9 @@ void reg_video(Ort::Session *session, ModelInit &mod) {
         // 处理推理和绘制边界框
         ImageInference image_inference(frame, session, mod);
         image_inference.draw_bounding_box();
+
+        //// 将处理后的帧写入输出视频
+        //writer.write(frame);
 
         cv::imshow("Video Frame", frame);
         ++frame_count;
@@ -44,8 +59,10 @@ void reg_video(Ort::Session *session, ModelInit &mod) {
         << total_time_ms << " ms, 平均帧率：" << average_fps << " FPS" << '\n';
 
     cap.release();
+    //writer.release();  // 释放 VideoWriter
     cv::destroyAllWindows();
 }
+
 
 // 识别整个文件夹的
 void reg_img(const fs::path &image_path, Ort::Session *session, ModelInit &mod) {
@@ -62,6 +79,14 @@ void reg_img(const fs::path &image_path, Ort::Session *session, ModelInit &mod) 
     cv::namedWindow(window_name, cv::WINDOW_AUTOSIZE);
     cv::imshow(window_name, img);
     cv::waitKey(1);
+
+    //// 保存识别后的图像
+    //std::string output_path = image_path.stem().string() + "_result" + image_path.extension().string();
+    //if (!cv::imwrite(output_path, img)) {
+    //    utils::utf2ansi_out << "无法保存图像: " << output_path << '\n';
+    //} else {
+    //    utils::utf2ansi_out << "图像已保存: " << output_path << '\n';
+    //}
 }
 
 int main(int argc, char *argv[]) {
@@ -87,8 +112,8 @@ int main(int argc, char *argv[]) {
     // 创建并显示视频播放器
     MainPanel panel(session, mod);
     panel.show();
-
     return QApplication::exec();
+    //return 0;
     
 }
 
