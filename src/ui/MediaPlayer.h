@@ -29,6 +29,7 @@ signals:
     void frame_processed(int count);
     void fps_updated(double fps);
     void video_ended();
+    void ship_detected(const QString &ship_type, int confidence, const QPoint &position);
 
 private:
     QLabel *image_label_;

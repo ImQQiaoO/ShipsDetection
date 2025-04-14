@@ -265,3 +265,15 @@ void ImageInference::draw_bounding_box() {
     DrawBoundingBox bounding_box;
     bounding_box.draw(img_, indices_, boxes_, confidences_, class_ids_);
 }
+
+std::vector<DetectionResult> ImageInference::get_curr_info() {
+    std::vector<DetectionResult> results;
+    for (size_t i = 0; i < indices_.size(); ++i) {
+        DetectionResult result;
+        result.class_name = std::to_string(class_ids_[indices_[i]]);
+        result.confidence = confidences_[indices_[i]];
+        result.bbox = boxes_[indices_[i]];
+        results.push_back(result);
+    }
+    return results;
+}

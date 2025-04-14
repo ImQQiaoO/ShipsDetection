@@ -61,9 +61,30 @@ void MediaPlayer::update_frame() {
     cv::Mat frame;
     if (cap_.read(frame)) {
         // 处理推理和绘制边界框
+        std::vector<DetectionResult> detections;
         {
             ImageInference image_inference(frame, session_, mod_);
             image_inference.draw_bounding_box();
+            detections = image_inference.get_curr_info();
+        }
+
+        // 发送检测结果信号
+        for (const auto &detection : detections) {
+            // 计算边界框中心点
+            QPoint center(
+                detection.bbox.x + detection.bbox.width / 2,
+                detection.bbox.y + detection.bbox.height / 2
+            );
+
+            // 转换置信度为百分比整数
+            int confidence_percent = static_cast<int>(detection.confidence * 100);
+
+            // 发送信号
+            emit ship_detected(
+                QString::fromStdString(detection.class_name),
+                confidence_percent,
+                center
+            );
         }
 
         // 将 OpenCV Mat 转换为 QImage 并显示
@@ -95,6 +116,7 @@ void MediaPlayer::update_frame() {
         emit video_ended();
     }
 }
+
 
 double MediaPlayer::get_current_fps() const {
     auto now = std::chrono::high_resolution_clock::now();

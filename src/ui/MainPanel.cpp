@@ -24,9 +24,8 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     connect(media_player_, &MediaPlayer::fps_updated, this, &MainPanel::on_fps_updated);
     connect(media_player_, &MediaPlayer::video_ended, this, &MainPanel::on_video_ended);
 
-    // 假设 MediaPlayer 类有一个 ship_detected 信号
-    // 如果没有，需要在 MediaPlayer 中添加这个信号
-    // connect(media_player_, &MediaPlayer::ship_detected, this, &MainPanel::on_ship_detected);
+    // MediaPlayer 类有一个 ship_detected 信号
+    connect(media_player_, &MediaPlayer::ship_detected, this, &MainPanel::on_ship_detected);
 
     connect(media_info_, &MediaInfo::play_pause_clicked, this, &MainPanel::on_play_pause_clicked);
     connect(media_info_, &MediaInfo::reset_clicked, this, &MainPanel::on_reset_clicked);
@@ -46,10 +45,6 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
         media_info_->set_frame_count(totalFrames);
     }
 
-    // 添加一些测试日志（可选）
-    // log_panel_->add_ship_log("货船", 95, QPoint(320, 240));
-    // log_panel_->add_ship_log("渔船", 85, QPoint(450, 300));
-    // log_panel_->add_ship_log("未知船只", 65, QPoint(200, 180));
 }
 
 

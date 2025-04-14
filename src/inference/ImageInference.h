@@ -2,10 +2,17 @@
 #include <opencv2/opencv.hpp>
 #include "ModelInit.h"
 
+struct DetectionResult {
+    std::string class_name;
+    float confidence;
+    cv::Rect bbox;
+};
+
 class ImageInference {
 public:
     ImageInference(cv::Mat img, Ort::Session *session, ModelInit &mod);
     void draw_bounding_box();
+    std::vector<DetectionResult> get_curr_info();
 private:
     // 原始输入图像、推理模型的会话指针
     cv::Mat img_;
