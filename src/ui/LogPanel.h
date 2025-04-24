@@ -17,7 +17,7 @@ public:
     void add_ship_log(const QString &ship_type, int confidence, const QPoint &position);
 
     // 清空日志
-    void clear_logs();
+    void clear_logs() const;
 
 private:
     // UI 组件
@@ -32,5 +32,5 @@ private:
     void setup_ui();
 
     // 格式化日志条目
-    QString format_log_entry(const QString &ship_type, int confidence, const QPoint &position);
+    static QString format_log_entry(const QString &ship_type, int confidence, const QPoint &position);
 };

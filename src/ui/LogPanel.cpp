@@ -60,7 +60,7 @@ void LogPanel::add_ship_log(const QString &ship_type, int confidence, const QPoi
     scrollbar->setValue(scrollbar->maximum());
 }
 
-void LogPanel::clear_logs() {
+void LogPanel::clear_logs() const {
     log_text_->clear();
     log_text_->append("<i>日志已清空</i>");
 }
