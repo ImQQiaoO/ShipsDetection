@@ -266,13 +266,13 @@ void ImageInference::draw_bounding_box() {
     bounding_box.draw(img_, indices_, boxes_, confidences_, class_ids_);
 }
 
-std::vector<DetectionResult> ImageInference::get_curr_info() {
+std::vector<DetectionResult> ImageInference::get_curr_info() const {
     std::vector<DetectionResult> results;
-    for (size_t i = 0; i < indices_.size(); ++i) {
+    for (const int i : indices_) {
         DetectionResult result;
-        result.class_name = std::to_string(class_ids_[indices_[i]]);
-        result.confidence = confidences_[indices_[i]];
-        result.bbox = boxes_[indices_[i]];
+        result.class_name = std::to_string(class_ids_[i]);
+        result.confidence = confidences_[i];
+        result.bbox = boxes_[i];
         results.push_back(result);
     }
     return results;
