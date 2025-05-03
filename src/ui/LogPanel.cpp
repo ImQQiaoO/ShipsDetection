@@ -1,4 +1,5 @@
 ﻿#include "LogPanel.h"
+#include "src/inference/DrawBoundingBox.h"
 #include <QScrollBar>
 #include <QFont>
 
@@ -78,13 +79,12 @@ QString LogPanel::format_log_entry(const QString &ship_type, int confidence, con
     } else {
         confidence_color = "red";
     }
-
     // 格式化日志条目
     return QString("<b>[%1]</b> 检测到<span style='color:blue;'>%2</span>，"
         "置信度：<span style='color:%3;'>%4%</span>，"
         "位置：(%5, %6)")
         .arg(timestamp)
-        .arg(ship_type)
+        .arg(QString::fromStdString(DrawBoundingBox::class_names[ship_type.toUInt()]))
         .arg(confidence_color)
         .arg(confidence)
         .arg(position.x())

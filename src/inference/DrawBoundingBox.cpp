@@ -6,6 +6,8 @@
 #include "DrawBoundingBox.h"
 #include "src/utils/Locale.hpp"
 
+std::vector<std::string> DrawBoundingBox::class_names;
+
 const std::vector<std::array<double, 4>> DrawBoundingBox::box_color = {
     // IN OPENCV IT IS BGRY
     {30, 208, 146, 255},
@@ -23,7 +25,7 @@ const std::vector<std::array<double, 4>> DrawBoundingBox::box_color = {
 };
 
 DrawBoundingBox::DrawBoundingBox() {
-    class_names_ = parse_class_names("./ships_dataset/data.yaml");
+    class_names = parse_class_names("./ships_dataset/data.yaml");
 }
 
 void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const std::vector<cv::Rect> &boxes, const std::vector<float> &confidences,
@@ -44,7 +46,7 @@ void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const 
         cv::rectangle(img, box, cv::Scalar(curr_color[0], curr_color[1], curr_color[2], curr_color[3]), 2);
 
         // 添加标签
-        std::string label = class_id < static_cast<int>(class_names_.size()) ? class_names_[class_id] : "unknown";
+        std::string label = class_id < static_cast<int>(class_names.size()) ? class_names[class_id] : "unknown";
         label += " " + std::to_string(static_cast<int>(conf * 100)) + "%";
 
         int baseline = 0;
