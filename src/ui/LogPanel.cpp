@@ -51,7 +51,7 @@ void LogPanel::setup_ui() {
     log_text_->append("<i>日志将显示在此处...</i>");
 }
 
-void LogPanel::add_ship_log(const QString &ship_type, int confidence, const QPoint &position) {
+void LogPanel::add_ship_log(const QString &ship_type, int confidence, const QPoint &position) const {
     // 格式化并添加日志条目
     QString log_entry = format_log_entry(ship_type, confidence, position);
     log_text_->append(log_entry);

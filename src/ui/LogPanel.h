@@ -14,7 +14,7 @@ public:
     ~LogPanel() override = default;
 
     // 添加船舶检测日志
-    void add_ship_log(const QString &ship_type, int confidence, const QPoint &position);
+    void add_ship_log(const QString &ship_type, int confidence, const QPoint &position) const;
 
     // 清空日志
     void clear_logs() const;
