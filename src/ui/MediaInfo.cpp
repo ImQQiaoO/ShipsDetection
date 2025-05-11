@@ -64,7 +64,6 @@ void MediaInfo::setup_ui() {
     // 创建文件按钮布局
     QHBoxLayout *file_layout = new QHBoxLayout();
     file_layout->addWidget(open_file_button_);
-    file_layout->addStretch(); // 添加弹性空间，使按钮靠左
 
     // 创建按钮布局
     QHBoxLayout *control_layout = new QHBoxLayout();
