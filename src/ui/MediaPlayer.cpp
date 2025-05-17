@@ -7,8 +7,8 @@
 #include <QFileDialog>
 
 MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
-    : QWidget(parent), session_(session), mod_(mod), frame_count_(0), is_paused_(false),
-    video_path_("./target_video/ship_video.mp4") {
+    : QWidget(parent), session_(session), mod_(mod), frame_count_(0),
+    video_path_("./target_video/ship_video.mp4"), is_paused_(false) {
 
     // 创建简单布局，只包含图像标签
     QVBoxLayout *layout = new QVBoxLayout(this);

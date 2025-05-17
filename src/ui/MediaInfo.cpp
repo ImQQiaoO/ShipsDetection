@@ -39,9 +39,14 @@ void MediaInfo::setup_ui() {
     reset_button_ = new QPushButton("重置", this);
     open_file_button_ = new QPushButton("选择视频文件", this);
     open_file_button_->setIcon(style()->standardIcon(QStyle::SP_DialogOpenButton)); // 添加文件图标
-
     open_file_button_->setMinimumWidth(380); // 设置最小宽度
     open_file_button_->setMinimumHeight(35); // 设置最小高度
+
+    // 创建拍照按钮
+    capture_button_ = new QPushButton("拍照", this);
+    capture_button_->setMinimumWidth(380); // 设置最小宽度
+    capture_button_->setMinimumHeight(35); // 设置最小高度
+    connect(capture_button_, &QPushButton::clicked, this, &MediaInfo::on_capture_frame_clicked);
 
     // 连接按钮信号
     connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
@@ -65,6 +70,9 @@ void MediaInfo::setup_ui() {
     QHBoxLayout *file_layout = new QHBoxLayout();
     file_layout->addWidget(open_file_button_);
 
+    QHBoxLayout *button_layout = new QHBoxLayout;
+    button_layout->addWidget(capture_button_);  // 添加拍照按钮到布局
+
     // 创建按钮布局
     QHBoxLayout *control_layout = new QHBoxLayout();
     control_layout->addWidget(play_pause_button_);
@@ -80,6 +88,7 @@ void MediaInfo::setup_ui() {
 
     // 添加按钮布局，紧跟在信息部分之后
     main_layout_->addLayout(file_layout);
+    main_layout_->addLayout(button_layout);
     main_layout_->addLayout(control_layout);
 
     // 添加弹性空间，将所有内容推向顶部
@@ -137,6 +146,10 @@ void MediaInfo::on_play_pause_clicked() {
 void MediaInfo::on_open_file_clicked() {
     // 发出打开文件信号，由MainPanel处理
     emit open_file_clicked();
+}
+
+void MediaInfo::on_capture_frame_clicked() {
+    emit capture_frame_clicked();
 }
 
 void MediaInfo::update_elapsed_time() {
