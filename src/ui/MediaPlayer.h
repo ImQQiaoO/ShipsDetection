@@ -44,5 +44,5 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> overall_start_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_fps_update_time_;
 
-    QImage mat_to_qimage(const cv::Mat &mat);
+    static QImage mat_to_qimage(const cv::Mat &mat);
 };

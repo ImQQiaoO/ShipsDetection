@@ -48,10 +48,6 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
 }
 
 
-MainPanel::~MainPanel() {
-    // QMainWindow 会自动删除子部件
-}
-
 void MainPanel::setup_ui() {
     // 创建中央部件
     QWidget *centralWidget = new QWidget(this);
@@ -130,7 +126,7 @@ void MainPanel::on_open_file_clicked() {
     }
 }
 
-void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) {
+void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) const {
     // 将检测到的船舶信息添加到日志面板
     log_panel_->add_ship_log(ship_type, confidence, position);
 }

@@ -12,7 +12,7 @@ class MainPanel : public QMainWindow {
 
 public:
     MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent = nullptr);
-    ~MainPanel() override;
+    ~MainPanel() override = default;
 
 private slots:
     void on_frame_processed(int count) const;
@@ -23,7 +23,7 @@ private slots:
     void on_open_file_clicked();
 
     // 新增：处理检测到船舶的信号
-    void on_ship_detected(const QString &ship_type, int confidence, const QPoint &position);
+    void on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) const;
 
 private:
     MediaPlayer *media_player_;
