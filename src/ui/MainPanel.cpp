@@ -73,6 +73,8 @@ void MainPanel::setup_ui() {
     rightLayout->addWidget(media_info_, 2);
     rightLayout->addWidget(log_panel_, 4);
 
+    connect(media_info_, &MediaInfo::capture_frame_clicked, this, &MainPanel::on_capture_frame);
+
     // 将视频播放器和右侧面板添加到分割器
     splitter_->addWidget(media_player_);
     splitter_->addWidget(rightPanel);
@@ -129,4 +131,21 @@ void MainPanel::on_open_file_clicked() {
 void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) const {
     // 将检测到的船舶信息添加到日志面板
     log_panel_->add_ship_log(ship_type, confidence, position);
+}
+
+void MainPanel::on_capture_frame() const {
+    // 获取当前帧并保存为图像
+    cv::Mat current_frame = media_player_->get_current_frame();
+    if (!current_frame.empty()) {
+        // 生成带有时间戳的文件名
+        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+        QString filename = "capture_" + timestamp + ".png";
+
+        // 保存图像
+        cv::imwrite(filename.toStdString(), current_frame);
+
+        // 在日志面板中记录拍照信息
+        QString log_message = "已截取当前帧并保存为: " + filename;
+        log_panel_->add_log(log_message);
+    }
 }

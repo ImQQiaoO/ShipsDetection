@@ -53,6 +53,10 @@ MediaPlayer::~MediaPlayer() {
         << totalTimeMs << " ms, 平均帧率：" << averageFps << " FPS" << '\n';
 }
 
+cv::Mat MediaPlayer::get_current_frame() const {
+    return current_frame_;
+}
+
 void MediaPlayer::update_frame() {
     if (is_paused_) {
         return;
@@ -60,6 +64,7 @@ void MediaPlayer::update_frame() {
 
     cv::Mat frame;
     if (cap_.read(frame)) {
+        current_frame_ = frame;
         // 处理推理和绘制边界框
         std::vector<DetectionResult> detections;
         {

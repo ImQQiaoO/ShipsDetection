@@ -19,6 +19,9 @@ public:
     // 清空日志
     void clear_logs() const;
 
+    // 添加日志
+    void add_log(const QString &log) const;
+
 private:
     // UI 组件
     QLabel *title_label_;

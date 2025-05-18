@@ -20,6 +20,7 @@ public:
     void set_video_path(const std::string &path);
     void reset_video();
     cv::VideoCapture &get_cap() { return cap_; }
+    cv::Mat get_current_frame() const;
 
 public slots:
     void update_frame();
@@ -41,6 +42,7 @@ private:
     std::string video_path_;
     double video_fps_;
     bool is_paused_;
+    cv::Mat current_frame_;  // 添加用于存储当前帧的成员变量
     std::chrono::time_point<std::chrono::high_resolution_clock> overall_start_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_fps_update_time_;
 

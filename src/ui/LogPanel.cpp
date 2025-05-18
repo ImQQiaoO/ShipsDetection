@@ -66,6 +66,14 @@ void LogPanel::clear_logs() const {
     log_text_->append("<i>日志已清空</i>");
 }
 
+void LogPanel::add_log(const QString& log) const {
+    // 添加普通日志条目
+    log_text_->append(log);
+    // 滚动到底部以显示最新日志
+    QScrollBar *scrollbar = log_text_->verticalScrollBar();
+    scrollbar->setValue(scrollbar->maximum());
+}
+
 QString LogPanel::format_log_entry(const QString &ship_type, int confidence, const QPoint &position) {
     // 获取当前时间
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");

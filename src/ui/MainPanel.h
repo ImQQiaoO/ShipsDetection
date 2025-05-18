@@ -22,8 +22,9 @@ private slots:
     void on_reset_clicked() const;
     void on_open_file_clicked();
 
-    // 新增：处理检测到船舶的信号
+    // 处理检测到船舶的信号
     void on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) const;
+    void on_capture_frame() const;
 
 private:
     MediaPlayer *media_player_;
