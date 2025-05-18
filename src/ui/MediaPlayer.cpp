@@ -64,7 +64,7 @@ void MediaPlayer::update_frame() {
 
     cv::Mat frame;
     if (cap_.read(frame)) {
-        current_frame_ = frame;
+        
         // 处理推理和绘制边界框
         std::vector<DetectionResult> detections;
         {
@@ -94,6 +94,8 @@ void MediaPlayer::update_frame() {
 
         // 将 OpenCV Mat 转换为 QImage 并显示
         QImage qImage = mat_to_qimage(frame);
+
+        current_frame_ = std::move(frame);
 
         // 设置图像
         image_label_->setPixmap(QPixmap::fromImage(qImage).scaled(
