@@ -1,8 +1,9 @@
-﻿#include "MainPanel.h"
-#include <QVBoxLayout>
+﻿#include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QWidget>
 #include <QMessageBox>
+#include "MainPanel.h"
+#include "src/utils/Locale.hpp"
+#include "src/ui/SnapShotPanel.h"
 
 MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QMainWindow(parent) {
@@ -138,14 +139,35 @@ void MainPanel::on_capture_frame() const {
     cv::Mat current_frame = media_player_->get_current_frame();
     if (!current_frame.empty()) {
         // 生成带有时间戳的文件名
-        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
+        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
         QString filename = "capture_" + timestamp + ".png";
 
         // 保存图像
         cv::imwrite(filename.toStdString(), current_frame);
 
         // 在日志面板中记录拍照信息
-        QString log_message = "已截取当前帧并保存为: " + filename;
+        const QString log_message = "已截取当前帧并保存为: " + filename;
         log_panel_->add_log(log_message);
+
+        QImage qImg;
+        if (current_frame.channels() == 3) { // 彩色图像
+            cv::Mat rgb_frame;
+            cv::cvtColor(current_frame, rgb_frame, cv::COLOR_BGR2RGB);
+            qImg = QImage(rgb_frame.data, rgb_frame.cols, rgb_frame.rows, rgb_frame.step, QImage::Format_RGB888).copy();
+        } else if (current_frame.channels() == 1) { // 灰度图像
+            qImg = QImage(current_frame.data, current_frame.cols, current_frame.rows, current_frame.step, QImage::Format_Grayscale8).copy();
+        } else {
+            log_panel_->add_log("错误：不支持的图像格式用于显示。");
+            return;
+        }
+        if (qImg.isNull()) {
+            log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
+            return;
+        }
+        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), const_cast<MainPanel *>(this));
+        snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
+        snapshot_dialog->exec();
+    } else {
+        log_panel_->add_log("无法截取当前帧");
     }
 }
