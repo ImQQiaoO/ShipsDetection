@@ -12,7 +12,7 @@ class SnapShotPanel : public QDialog {
     Q_OBJECT
 
 public:
-    explicit SnapShotPanel(const QImage &image, QWidget *parent = nullptr, , std::vector<DetectionResult> results);
+    explicit SnapShotPanel(const QImage &image, const std::vector<DetectionResult> &results, QWidget *parent = nullptr);
     ~SnapShotPanel() override = default;
 
 private:

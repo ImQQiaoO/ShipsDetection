@@ -166,7 +166,7 @@ void MainPanel::on_capture_frame(std::vector<DetectionResult> results) const {
             log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
             return;
         }
-        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), const_cast<MainPanel *>(this), results);
+        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), results, const_cast<MainPanel *>(this));
         snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
         snapshot_dialog->exec();
     } else {

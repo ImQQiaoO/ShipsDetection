@@ -6,7 +6,7 @@
 #include <QTableWidget>
 #include <QHeaderView>
 
-SnapShotPanel::SnapShotPanel(const QImage &image, QWidget *parent, std::vector<DetectionResult> results)
+SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionResult> &results, QWidget *parent)
     : QDialog(parent) {
     setWindowTitle(tr("当前帧")); // tr() 以便翻译
 
@@ -37,7 +37,7 @@ SnapShotPanel::SnapShotPanel(const QImage &image, QWidget *parent, std::vector<D
         tr("船舶编号")
         });
     // 设置初始行数
-    tableWidget->setRowCount(1);  // 初始化时设置至少 1 行
+    tableWidget->setRowCount(results.size());  // 初始化时设置至少 1 行
 
     // 列宽均匀分布，可根据需要调整
     tableWidget->horizontalHeader()->setSectionResizeMode(
@@ -45,22 +45,22 @@ SnapShotPanel::SnapShotPanel(const QImage &image, QWidget *parent, std::vector<D
     );
     tableWidget->verticalHeader()->setVisible(false);
 
-    // 设置每个单元格的内容并居中对齐
-    QTableWidgetItem *item1 = new QTableWidgetItem("1");
-    item1->setTextAlignment(Qt::AlignCenter);
-    tableWidget->setItem(0, 0, item1);  // 序号
-
-    QTableWidgetItem *item2 = new QTableWidgetItem("passenger");
-    item2->setTextAlignment(Qt::AlignCenter);
-    tableWidget->setItem(0, 1, item2);  // 类型
-
-    QTableWidgetItem *item3 = new QTableWidgetItem("0.85");
-    item3->setTextAlignment(Qt::AlignCenter);
-    tableWidget->setItem(0, 2, item3);  // 置信度
-
-    QTableWidgetItem *item4 = new QTableWidgetItem("-");
-    item4->setTextAlignment(Qt::AlignCenter);
-    tableWidget->setItem(0, 3, item4);  // 船舶编号
+    for (int i = 0; i < results.size(); ++i) {
+        const auto &result = results[i];
+        // 设置每个单元格的内容并居中对齐
+        QTableWidgetItem *item1 = new QTableWidgetItem(QString::number(i + 1));
+        item1->setTextAlignment(Qt::AlignCenter);
+        tableWidget->setItem(i, 0, item1);  // 序号
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString::fromStdString(result.class_name));
+        item2->setTextAlignment(Qt::AlignCenter);
+        tableWidget->setItem(i, 1, item2);  // 类型
+        QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));
+        item3->setTextAlignment(Qt::AlignCenter);
+        tableWidget->setItem(i, 2, item3);  // 置信度
+        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(result.class_name)); // 船舶编号
+        item4->setTextAlignment(Qt::AlignCenter);
+        tableWidget->setItem(i, 3, item4);
+    }
 
     // ———— 布局 ————
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
