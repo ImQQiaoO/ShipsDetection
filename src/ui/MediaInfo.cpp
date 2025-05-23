@@ -2,6 +2,8 @@
 #include <QFileInfo>
 #include <QStyle>
 
+#include "MediaPlayer.h"
+
 MediaInfo::MediaInfo(QWidget *parent)
     : QWidget(parent), is_playing_(true), elapsed_time_(0, 0, 0) {
     setup_ui();
@@ -46,7 +48,10 @@ void MediaInfo::setup_ui() {
     capture_button_ = new QPushButton("拍照", this);
     capture_button_->setMinimumWidth(380); // 设置最小宽度
     capture_button_->setMinimumHeight(35); // 设置最小高度
-    connect(capture_button_, &QPushButton::clicked, this, &MediaInfo::on_capture_frame_clicked);
+    connect(capture_button_, &QPushButton::clicked, this, [this]() {
+        auto condition = MediaPlayer::get_detections();
+        on_capture_frame_clicked(condition);
+    });
 
     // 连接按钮信号
     connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
@@ -148,8 +153,8 @@ void MediaInfo::on_open_file_clicked() {
     emit open_file_clicked();
 }
 
-void MediaInfo::on_capture_frame_clicked() {
-    emit capture_frame_clicked();
+void MediaInfo::on_capture_frame_clicked(const std::vector<DetectionResult> results) {
+    emit capture_frame_clicked(results);
 }
 
 void MediaInfo::update_elapsed_time() {

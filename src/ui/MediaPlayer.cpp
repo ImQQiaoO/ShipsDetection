@@ -6,6 +6,8 @@
 #include <QPixmapCache>
 #include <QFileDialog>
 
+std::vector<DetectionResult> MediaPlayer::detections_;
+
 MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QWidget(parent), session_(session), mod_(mod), frame_count_(0),
     video_path_("./target_video/ship_video.mp4"), is_paused_(false) {
@@ -71,6 +73,7 @@ void MediaPlayer::update_frame() {
             ImageInference image_inference(frame, session_, mod_);
             image_inference.draw_bounding_box();
             detections = image_inference.get_curr_info();
+            detections_ = detections;
         }
 
         // 发送检测结果信号
@@ -91,7 +94,6 @@ void MediaPlayer::update_frame() {
                 center
             );
         }
-
         // 将 OpenCV Mat 转换为 QImage 并显示
         QImage qImage = mat_to_qimage(frame);
 

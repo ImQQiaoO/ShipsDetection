@@ -7,6 +7,8 @@
 #include "src/inference/ModelInit.h"
 #include <chrono>
 
+#include "src/inference/ImageInference.h"
+
 class MediaPlayer : public QWidget {
     Q_OBJECT
 
@@ -21,6 +23,7 @@ public:
     void reset_video();
     cv::VideoCapture &get_cap() { return cap_; }
     cv::Mat get_current_frame() const;
+    static std::vector<DetectionResult> get_detections() { return detections_; }
 
 public slots:
     void update_frame();
@@ -45,6 +48,7 @@ private:
     cv::Mat current_frame_;  // 添加用于存储当前帧的成员变量
     std::chrono::time_point<std::chrono::high_resolution_clock> overall_start_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_fps_update_time_;
+    static std::vector<DetectionResult> detections_;
 
     static QImage mat_to_qimage(const cv::Mat &mat);
 };

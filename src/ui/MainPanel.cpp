@@ -32,6 +32,8 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     connect(media_info_, &MediaInfo::reset_clicked, this, &MainPanel::on_reset_clicked);
     connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked);
 
+    connect(media_info_, &MediaInfo::capture_frame_clicked,this, &MainPanel::on_capture_frame);
+
     // 设置视频信息
     cv::VideoCapture &cap = media_player_->get_cap();
     if (cap.isOpened()) {
@@ -73,8 +75,6 @@ void MainPanel::setup_ui() {
     // 设置垂直布局的拉伸因子
     rightLayout->addWidget(media_info_, 2);
     rightLayout->addWidget(log_panel_, 4);
-
-    connect(media_info_, &MediaInfo::capture_frame_clicked, this, &MainPanel::on_capture_frame);
 
     // 将视频播放器和右侧面板添加到分割器
     splitter_->addWidget(media_player_);
@@ -134,9 +134,11 @@ void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const
     log_panel_->add_ship_log(ship_type, confidence, position);
 }
 
-void MainPanel::on_capture_frame() const {
+void MainPanel::on_capture_frame(std::vector<DetectionResult> results) const {
     // 获取当前帧并保存为图像
     cv::Mat current_frame = media_player_->get_current_frame();
+    //std::cout << ship_type.toStdString() << " " << confidence << " " << position.x() << " " << position.y() << std::endl;
+
     if (!current_frame.empty()) {
         // 生成带有时间戳的文件名
         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
@@ -164,7 +166,7 @@ void MainPanel::on_capture_frame() const {
             log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
             return;
         }
-        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), const_cast<MainPanel *>(this));
+        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), const_cast<MainPanel *>(this), results);
         snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
         snapshot_dialog->exec();
     } else {

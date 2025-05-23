@@ -6,6 +6,8 @@
 #include <QTimer>
 #include <QTime>
 
+#include "src/inference/ImageInference.h"
+
 class MediaInfo : public QWidget {
     Q_OBJECT
 
@@ -25,13 +27,13 @@ signals:
     void play_pause_clicked(bool play);
     void reset_clicked();
     void open_file_clicked(); // 打开文件按钮被点击
-    void capture_frame_clicked();
+    void capture_frame_clicked(std::vector<DetectionResult> results);
 
 private slots:
     void on_play_pause_clicked();
     void on_open_file_clicked(); // 处理打开文件按钮点击
     void update_elapsed_time();
-    void on_capture_frame_clicked();
+    void on_capture_frame_clicked(std::vector<DetectionResult> results);
 
 private:
     // UI 组件
