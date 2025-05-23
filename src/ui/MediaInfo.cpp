@@ -153,7 +153,7 @@ void MediaInfo::on_open_file_clicked() {
     emit open_file_clicked();
 }
 
-void MediaInfo::on_capture_frame_clicked(const std::vector<DetectionResult> results) {
+void MediaInfo::on_capture_frame_clicked(const std::vector<DetectionResult> &results) {
     emit capture_frame_clicked(results);
 }
 

@@ -6,6 +6,8 @@
 #include <QTableWidget>
 #include <QHeaderView>
 
+#include "src/inference/DrawBoundingBox.h"
+
 SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionResult> &results, QWidget *parent)
     : QDialog(parent) {
     setWindowTitle(tr("当前帧")); // tr() 以便翻译
@@ -51,7 +53,7 @@ SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionRes
         QTableWidgetItem *item1 = new QTableWidgetItem(QString::number(i + 1));
         item1->setTextAlignment(Qt::AlignCenter);
         tableWidget->setItem(i, 0, item1);  // 序号
-        QTableWidgetItem *item2 = new QTableWidgetItem(QString::fromStdString(result.class_name));
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString::fromStdString(DrawBoundingBox::class_names[static_cast<size_t>(std::stoul(result.class_name))]));
         item2->setTextAlignment(Qt::AlignCenter);
         tableWidget->setItem(i, 1, item2);  // 类型
         QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));

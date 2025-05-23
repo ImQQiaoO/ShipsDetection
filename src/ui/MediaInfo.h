@@ -33,7 +33,7 @@ private slots:
     void on_play_pause_clicked();
     void on_open_file_clicked(); // 处理打开文件按钮点击
     void update_elapsed_time();
-    void on_capture_frame_clicked(std::vector<DetectionResult> results);
+    void on_capture_frame_clicked(const std::vector<DetectionResult> &results);
 
 private:
     // UI 组件
