@@ -32,7 +32,7 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     connect(media_info_, &MediaInfo::reset_clicked, this, &MainPanel::on_reset_clicked);
     connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked);
 
-    connect(media_info_, &MediaInfo::capture_frame_clicked,this, &MainPanel::on_capture_frame);
+    connect(media_info_, &MediaInfo::capture_frame_clicked, this, &MainPanel::on_capture_frame);
 
     // 设置视频信息
     cv::VideoCapture &cap = media_player_->get_cap();
@@ -134,7 +134,7 @@ void MainPanel::on_ship_detected(const QString &ship_type, int confidence, const
     log_panel_->add_ship_log(ship_type, confidence, position);
 }
 
-void MainPanel::on_capture_frame(std::vector<DetectionResult> results) const {
+void MainPanel::on_capture_frame(const std::vector<DetectionResult> &results) const {
     // 获取当前帧并保存为图像
     cv::Mat current_frame = media_player_->get_current_frame();
     //std::cout << ship_type.toStdString() << " " << confidence << " " << position.x() << " " << position.y() << std::endl;

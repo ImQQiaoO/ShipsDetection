@@ -22,7 +22,7 @@ private slots:
     void on_reset_clicked() const;
     void on_open_file_clicked();
     void on_ship_detected(const QString &ship_type, int confidence, const QPoint &position) const;
-    void on_capture_frame(std::vector<DetectionResult> results) const;
+    void on_capture_frame(const std::vector<DetectionResult> &results) const;
 
 private:
     MediaPlayer *media_player_;
