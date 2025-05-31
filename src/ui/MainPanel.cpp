@@ -168,7 +168,7 @@ void MainPanel::on_capture_frame(std::vector<DetectionResult> results) const {
         }
         SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), results, const_cast<MainPanel *>(this));
         snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
-        snapshot_dialog->exec();
+        snapshot_dialog->show();
     } else {
         log_panel_->add_log("无法截取当前帧");
     }

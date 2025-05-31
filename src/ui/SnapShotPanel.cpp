@@ -2,7 +2,6 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPixmap>
-#include <opencv2/highgui.hpp>
 #include <QTableWidget>
 #include <QHeaderView>
 
@@ -39,7 +38,7 @@ SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionRes
         tr("船舶编号")
         });
     // 设置初始行数
-    tableWidget->setRowCount(results.size());  // 初始化时设置至少 1 行
+    tableWidget->setRowCount(results.size());
 
     // 列宽均匀分布，可根据需要调整
     tableWidget->horizontalHeader()->setSectionResizeMode(
