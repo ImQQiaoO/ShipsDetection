@@ -12,3 +12,5 @@ ShipsDetection
 *.png
 /target_video
 venv
+*json
+scripts/modelStructure.py
