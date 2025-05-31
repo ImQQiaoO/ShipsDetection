@@ -142,9 +142,16 @@ void MainPanel::on_capture_frame(std::vector<DetectionResult> results) const {
     if (!current_frame.empty()) {
         // 生成带有时间戳的文件名
         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
-        QString filename = "capture_" + timestamp + ".png";
 
-        // 保存图像
+        QDir saveDir("./saved_snapshots");
+        if (!saveDir.exists()) {
+            bool saved = saveDir.mkpath(".");
+            if (!saved) {
+                log_panel_->add_log("错误：无法创建保存目录。请检查权限或路径是否正确。");
+                return;
+            }
+        }
+        QString filename = saveDir.filePath("capture_" + timestamp + ".png");
         cv::imwrite(filename.toStdString(), current_frame);
 
         // 在日志面板中记录拍照信息
