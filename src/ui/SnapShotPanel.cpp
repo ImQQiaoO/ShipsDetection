@@ -71,3 +71,35 @@ SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionRes
 
     adjustSize();
 }
+
+QVector<QVector<QString>> SnapShotPanel::get_table_contents() const {
+    QVector<QVector<QString>> contents;
+    int rowCount = tableWidget->rowCount();
+    int colCount = tableWidget->columnCount();
+    contents.resize(rowCount);
+    
+    for (int i = 0; i < rowCount; ++i) {
+        contents[i].resize(colCount);
+        for (int j = 0; j < colCount; ++j) {
+            QTableWidgetItem *item = tableWidget->item(i, j);
+            if (item) {
+                contents[i][j] = item->text();
+            } else {
+                contents[i][j] = QString(); // 如果没有内容则设置为空
+            }
+        }
+    }
+    return contents;
+}
+
+void SnapShotPanel::closeEvent(QCloseEvent *event) {
+    auto contents = get_table_contents();
+    for (const auto &row : contents) {
+        QStringList row_str;
+        for (const auto &cell : row) {
+            row_str << cell;
+        }
+        qDebug() << row_str.join(" | ");
+    }
+    QDialog::closeEvent(event);
+}

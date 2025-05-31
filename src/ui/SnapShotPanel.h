@@ -18,4 +18,6 @@ public:
 private:
     QLabel *imageLabel;
     QTableWidget *tableWidget;
+    QVector<QVector<QString>> get_table_contents() const;
+    void closeEvent(QCloseEvent *event) override;
 };
