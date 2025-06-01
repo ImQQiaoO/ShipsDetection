@@ -9,13 +9,14 @@
 #include "src/inference/DrawBoundingBox.h"
 #include "src/utils/JsonRepository.hpp"
 
-SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionResult> &results, const QString &filename, 
+SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionResult> &results, const QString &filename,
     const LogPanel *log_panel, QWidget *parent) : QDialog(parent), curr_frame_(image) {
 
     setWindowTitle(tr("当前帧")); // tr() 以便翻译
 
     filename_ = filename;
-    get_ocr_res(results);
+    std::vector<std::string> ship_identifiers = get_ocr_res(results);
+    process_image(results);
     auto qimage = cv2qimage(image, log_panel);
     // ———— 上方：图片展示 ————
     image_label_ = new QLabel(this);
@@ -64,8 +65,7 @@ SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionRe
         QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));
         item3->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 2, item3);  // 置信度
-        std::string ship_identifier = get_ocr_res(results);
-        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(ship_identifier)); // 船舶编号
+        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(ship_identifiers[i])); // 船舶编号
         item4->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 3, item4);
     }
@@ -117,21 +117,10 @@ void SnapShotPanel::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
-std::string SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) {
-    // 创建一份当前帧的副本以便绘制
+std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) {
+    cv::Mat ocr_image = curr_frame_.clone();
 
-    for (size_t i = 0; i < results.size(); ++i) {
-        // 获取bbox
-        const auto &bbox = results[i].bbox;
-        // 绘制绿色矩形框
-        cv::rectangle(curr_frame_, bbox, cv::Scalar(0, 255, 0), 2);
-    }
-    // 可选：显示或保存测试图片，便于调试
-    // cv::imshow("Green BBox Test", img_with_boxes);
-    // cv::waitKey(0);
-    // cv::imwrite("debug_bbox.png", img_with_boxes);
-    // 这里只返回空字符串，后续可扩展为OCR识别结果
-    return "";
+    return std::vector<std::string>(results.size());
 }
 
 QImage SnapShotPanel::cv2qimage(const cv::Mat &frame, const LogPanel *log_panel) {
@@ -151,4 +140,26 @@ QImage SnapShotPanel::cv2qimage(const cv::Mat &frame, const LogPanel *log_panel)
         return {};
     }
     return qImg;
+}
+
+void SnapShotPanel::process_image(const std::vector<DetectionResult> &results) {
+    // 先保存原始帧到ocr_image
+    cv::Mat overlay = curr_frame_.clone();  // 复制一份用来画不透明矩形
+    double alpha = 125.0 / 255.0;  // alpha 透明度
+    for (size_t i = 0; i < results.size(); ++i) {
+        const auto &bbox = results[i].bbox;
+        auto rgb_arr = DrawBoundingBox::box_color[stoi(results[i].class_name)];
+        cv::rectangle(overlay, bbox, cv::Scalar(rgb_arr[0], rgb_arr[1], rgb_arr[2]), cv::FILLED);
+        std::string text = std::to_string(i + 1);
+        int fontFace = cv::FONT_HERSHEY_SIMPLEX;
+        double fontScale = 5;
+        int thickness = 2;
+        int baseline = 0;
+        cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
+        int text_x = bbox.x + (bbox.width - textSize.width) / 2;
+        int text_y = bbox.y + (bbox.height + textSize.height) / 2;
+        cv::putText(overlay, text, cv::Point(text_x, text_y), fontFace, fontScale, cv::Scalar(255, 255, 255), thickness);
+    }
+    // 用 addWeighted 把 'overlay' 混合到 curr_frame_ 上
+    cv::addWeighted(overlay, alpha, curr_frame_, 1.0 - alpha, 0, curr_frame_);
 }
