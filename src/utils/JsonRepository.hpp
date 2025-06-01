@@ -20,6 +20,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SnapShotItem, time, ship_type, image_path, co
 
 class JsonRepository {
     std::vector<SnapShotItem> item_list_;
+    std::vector<SnapShotItem> all_items_list_;
 
     static std::string format_time(const std::string &image_path) {
         std::regex re(R"(capture_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})_(\d{3})\.png)");
@@ -55,10 +56,7 @@ public:
         }
     }
 
-    void save_to_file(const std::string &json_filename) const {
-        std::vector<SnapShotItem> all_items;
-
-        // 尝试读取并反序列化现有的JSON文件
+    void read_from_json(const std::string &json_filename) {
         std::ifstream ifs(json_filename);
         if (ifs.good() && ifs.peek() != std::ifstream::traits_type::eof()) {
             try {
@@ -68,21 +66,22 @@ public:
                 // 检查JSON是否为数组格式
                 if (existing_json.is_array()) {
                     // 将JSON数组反序列化为SnapShotItem向量
-                    all_items = existing_json.get<std::vector<SnapShotItem>>();
+                    all_items_list_ = existing_json.get<std::vector<SnapShotItem>>();
                 }
             } catch (const std::exception &e) {
                 // 读取或反序列化失败，输出错误信息但继续执行
                 std::cerr << "Warning: Failed to read existing JSON file: " << e.what() << std::endl;
-                all_items.clear(); // 确保数组A为空，重新开始
+                all_items_list_.clear(); // 确保数组A为空，重新开始
             }
         }
         ifs.close();
+    }
 
-        // 将当前item_list_的内容添加到数组A后面
-        all_items.insert(all_items.end(), item_list_.begin(), item_list_.end());
+    void save_to_file(const std::string &json_filename) {
+        read_from_json(json_filename);
+        all_items_list_.insert(all_items_list_.end(), item_list_.begin(), item_list_.end());
 
-        // 将合并后的数组A序列化并写入文件
-        nlohmann::json final_json = all_items;
+        nlohmann::json final_json = all_items_list_;
         std::ofstream ofs(json_filename, std::ios::trunc);
         if (ofs.is_open()) {
             ofs << final_json.dump(4); // 4空格缩进
