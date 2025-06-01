@@ -158,22 +158,22 @@ void MainPanel::on_capture_frame(const std::vector<DetectionResult> &results) co
         const QString log_message = "已截取当前帧并保存为: " + filename;
         log_panel_->add_log(log_message);
 
-        QImage qImg;
-        if (current_frame.channels() == 3) { // 彩色图像
-            cv::Mat rgb_frame;
-            cv::cvtColor(current_frame, rgb_frame, cv::COLOR_BGR2RGB);
-            qImg = QImage(rgb_frame.data, rgb_frame.cols, rgb_frame.rows, rgb_frame.step, QImage::Format_RGB888).copy();
-        } else if (current_frame.channels() == 1) { // 灰度图像
-            qImg = QImage(current_frame.data, current_frame.cols, current_frame.rows, current_frame.step, QImage::Format_Grayscale8).copy();
-        } else {
-            log_panel_->add_log("错误：不支持的图像格式用于显示。");
-            return;
-        }
-        if (qImg.isNull()) {
-            log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
-            return;
-        }
-        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), results, filename, const_cast<MainPanel *>(this));
+        //QImage qImg;
+        //if (current_frame.channels() == 3) { // 彩色图像
+        //    cv::Mat rgb_frame;
+        //    cv::cvtColor(current_frame, rgb_frame, cv::COLOR_BGR2RGB);
+        //    qImg = QImage(rgb_frame.data, rgb_frame.cols, rgb_frame.rows, rgb_frame.step, QImage::Format_RGB888).copy();
+        //} else if (current_frame.channels() == 1) { // 灰度图像
+        //    qImg = QImage(current_frame.data, current_frame.cols, current_frame.rows, current_frame.step, QImage::Format_Grayscale8).copy();
+        //} else {
+        //    log_panel_->add_log("错误：不支持的图像格式用于显示。");
+        //    return;
+        //}
+        //if (qImg.isNull()) {
+        //    log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
+        //    return;
+        //}
+        SnapShotPanel *snapshot_dialog = new SnapShotPanel(current_frame, results, filename, log_panel_, const_cast<MainPanel *>(this));
         snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
         snapshot_dialog->show();
     } else {

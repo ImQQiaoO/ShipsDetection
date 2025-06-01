@@ -5,18 +5,21 @@
 #include <QTableWidget>
 #include <QHeaderView>
 
+#include "LogPanel.h"
 #include "src/inference/DrawBoundingBox.h"
 #include "src/utils/JsonRepository.hpp"
 
-SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionResult> &results, const QString &filename, QWidget *parent)
-    : QDialog(parent) {
+SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionResult> &results, const QString &filename, 
+    const LogPanel *log_panel, QWidget *parent) : QDialog(parent), curr_frame_(image) {
+
     setWindowTitle(tr("当前帧")); // tr() 以便翻译
 
     filename_ = filename;
-
+    get_ocr_res(results);
+    auto qimage = cv2qimage(image, log_panel);
     // ———— 上方：图片展示 ————
     image_label_ = new QLabel(this);
-    QPixmap originalPixmap = QPixmap::fromImage(image);
+    QPixmap originalPixmap = QPixmap::fromImage(qimage);
     const int maxWidth = 800;
     const int maxHeight = 300;
     QPixmap scaledPixmap = originalPixmap.scaled(
@@ -61,7 +64,8 @@ SnapShotPanel::SnapShotPanel(const QImage &image, const std::vector<DetectionRes
         QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));
         item3->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 2, item3);  // 置信度
-        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(result.class_name)); // 船舶编号
+        std::string ship_identifier = get_ocr_res(results);
+        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(ship_identifier)); // 船舶编号
         item4->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 3, item4);
     }
@@ -80,7 +84,7 @@ QVector<QVector<QString>> SnapShotPanel::get_table_contents() const {
     int rowCount = table_widget_->rowCount();
     int colCount = table_widget_->columnCount();
     contents.resize(rowCount);
-    
+
     for (int i = 0; i < rowCount; ++i) {
         contents[i].resize(colCount);
         for (int j = 0; j < colCount; ++j) {
@@ -111,4 +115,40 @@ void SnapShotPanel::closeEvent(QCloseEvent *event) {
     jr.save_to_file("./snapshots.json");
 
     QDialog::closeEvent(event);
+}
+
+std::string SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) {
+    // 创建一份当前帧的副本以便绘制
+
+    for (size_t i = 0; i < results.size(); ++i) {
+        // 获取bbox
+        const auto &bbox = results[i].bbox;
+        // 绘制绿色矩形框
+        cv::rectangle(curr_frame_, bbox, cv::Scalar(0, 255, 0), 2);
+    }
+    // 可选：显示或保存测试图片，便于调试
+    // cv::imshow("Green BBox Test", img_with_boxes);
+    // cv::waitKey(0);
+    // cv::imwrite("debug_bbox.png", img_with_boxes);
+    // 这里只返回空字符串，后续可扩展为OCR识别结果
+    return "";
+}
+
+QImage SnapShotPanel::cv2qimage(const cv::Mat &frame, const LogPanel *log_panel) {
+    QImage qImg;
+    if (frame.channels() == 3) { // 彩色图像
+        cv::Mat rgb_frame;
+        cv::cvtColor(frame, rgb_frame, cv::COLOR_BGR2RGB);
+        qImg = QImage(rgb_frame.data, rgb_frame.cols, rgb_frame.rows, rgb_frame.step, QImage::Format_RGB888).copy();
+    } else if (frame.channels() == 1) { // 灰度图像
+        qImg = QImage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_Grayscale8).copy();
+    } else {
+        log_panel->add_log("错误：不支持的图像格式用于显示。");
+        return {};
+    }
+    if (qImg.isNull()) {
+        log_panel->add_log("错误：无法将OpenCV图像转换为QImage。");
+        return {};
+    }
+    return qImg;
 }
