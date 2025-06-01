@@ -121,10 +121,10 @@ void SnapShotPanel::closeEvent(QCloseEvent *event) {
 std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) const {
     std::vector<std::string> ship_identifiers(results.size());
     cv::Mat ocr_image = curr_frame_.clone();
-    for (const auto &result : results) {
-        cv::Mat roi_image = ocr_image(result.bbox);
+    for (size_t i = 0; i < ship_identifiers.size(); ++i) {
+        cv::Mat roi_image = ocr_image(results[i].bbox);
         ShipNumOCR ship_ocr;
-        ship_identifiers.push_back(ship_ocr.recognizeText(roi_image));
+        ship_identifiers[i] = ship_ocr.recognizeText(roi_image);
     }
     return ship_identifiers;
 }
