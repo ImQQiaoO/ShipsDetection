@@ -8,6 +8,7 @@
 #include "LogPanel.h"
 #include "src/inference/DrawBoundingBox.h"
 #include "src/utils/JsonRepository.hpp"
+#include "src/ocr/ShipNumOCR.h"
 
 SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionResult> &results, const QString &filename,
     const LogPanel *log_panel, QWidget *parent) : QDialog(parent), curr_frame_(image) {
@@ -117,10 +118,15 @@ void SnapShotPanel::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
-std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) {
+std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) const {
+    std::vector<std::string> ship_identifiers(results.size());
     cv::Mat ocr_image = curr_frame_.clone();
-
-    return std::vector<std::string>(results.size());
+    for (const auto &result : results) {
+        cv::Mat roi_image = ocr_image(result.bbox);
+        ShipNumOCR ship_ocr;
+        ship_identifiers.push_back(ship_ocr.recognizeText(roi_image));
+    }
+    return ship_identifiers;
 }
 
 QImage SnapShotPanel::cv2qimage(const cv::Mat &frame, const LogPanel *log_panel) {

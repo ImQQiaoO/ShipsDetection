@@ -25,7 +25,7 @@ private:
     QString filename_;
     QVector<QVector<QString>> get_table_contents() const;
     void closeEvent(QCloseEvent *event) override;
-    std::vector<std::string> get_ocr_res(const std::vector<DetectionResult>& results);
+    std::vector<std::string> get_ocr_res(const std::vector<DetectionResult>& results) const;
     static QImage cv2qimage(const cv::Mat &frame, const LogPanel *log_panel);
     void process_image(const std::vector<DetectionResult>& results);
 };
