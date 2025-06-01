@@ -143,7 +143,7 @@ void MainPanel::on_capture_frame(const std::vector<DetectionResult> &results) co
         // 生成带有时间戳的文件名
         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
 
-        QDir saveDir("./saved_snapshots");
+        QDir saveDir(save_path);  // Snapshot 保存目录
         if (!saveDir.exists()) {
             bool saved = saveDir.mkpath(".");
             if (!saved) {
@@ -173,7 +173,7 @@ void MainPanel::on_capture_frame(const std::vector<DetectionResult> &results) co
             log_panel_->add_log("错误：无法将OpenCV图像转换为QImage。");
             return;
         }
-        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), results, const_cast<MainPanel *>(this));
+        SnapShotPanel *snapshot_dialog = new SnapShotPanel(qImg.copy(), results, filename, const_cast<MainPanel *>(this));
         snapshot_dialog->setAttribute(Qt::WA_DeleteOnClose);
         snapshot_dialog->show();
     } else {

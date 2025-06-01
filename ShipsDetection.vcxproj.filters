@@ -84,6 +84,9 @@
     <ClCompile Include="src\ui\SnapShotPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\utils\JsonRepository.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\ui\MediaPlayer.h">

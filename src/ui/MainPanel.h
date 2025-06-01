@@ -7,6 +7,8 @@
 #include "LogPanel.h"
 #include "src/inference/ModelInit.h"
 
+const std::filesystem::path save_path = "./saved_snapshots";
+
 class MainPanel : public QMainWindow {
     Q_OBJECT
 
