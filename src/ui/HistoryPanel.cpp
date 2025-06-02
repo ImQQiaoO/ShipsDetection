@@ -55,13 +55,13 @@ HistoryPanel::HistoryPanel() {
         QTableWidgetItem *item1 = new QTableWidgetItem(QString::number(i + 1));
         item1->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 0, item1);  // 序号
-        QTableWidgetItem *item2 = new QTableWidgetItem(QString::fromStdString("000"));
+        QTableWidgetItem *item2 = new QTableWidgetItem(QString::fromStdString(result.ship_type));
         item2->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 1, item2);  // 类型
         QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));
         item3->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 2, item3);  // 置信度
-        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString("000")); // 船舶编号
+        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(result.identifier)); // 船舶编号
         item4->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 3, item4);
     }
