@@ -1,5 +1,4 @@
 ﻿#include "HistoryPanel.h"
-#include "src/utils/JsonRepository.hpp"
 #include <QTableWidget>
 #include <map>
 
@@ -8,10 +7,10 @@ HistoryPanel::HistoryPanel() {
     resize(600, 800);
     setMinimumSize(400, 600);  // 最小尺寸
     setMaximumSize(800, 1200); // 最大尺寸
-    std::vector<SnapShotItem> saved_items = JsonRepository::read_from_json("./snapshots.json");
+    saved_items_ = JsonRepository::read_from_json("./snapshots.json");
 
     std::map<std::string, size_t> inventory;
-    for (auto& saved_item : saved_items) {
+    for (auto& saved_item : saved_items_) {
         ++inventory[saved_item.ship_type];
     }
 
@@ -41,7 +40,7 @@ HistoryPanel::HistoryPanel() {
         tr("船舶编号")
         });
     // 设置初始行数
-    table_widget_->setRowCount(saved_items.size());
+    table_widget_->setRowCount(saved_items_.size());
 
     // 列宽均匀分布，可根据需要调整
     table_widget_->horizontalHeader()->setSectionResizeMode(
@@ -49,8 +48,8 @@ HistoryPanel::HistoryPanel() {
     );
     table_widget_->verticalHeader()->setVisible(false);
 
-    for (int i = 0; i < saved_items.size(); ++i) {
-        const auto &result = saved_items[i];
+    for (int i = 0; i < saved_items_.size(); ++i) {
+        const auto &result = saved_items_[i];
         // 设置每个单元格的内容并居中对齐
         QTableWidgetItem *item1 = new QTableWidgetItem(QString::number(i + 1));
         item1->setTextAlignment(Qt::AlignCenter);
@@ -72,6 +71,9 @@ HistoryPanel::HistoryPanel() {
     mainLayout->addWidget(table_widget_);    // 下方表格
     setLayout(mainLayout);
 
+    table_widget_->setMouseTracking(true);
+    connect(table_widget_, &QTableWidget::cellEntered, this, &HistoryPanel::onCellEntered);
+    table_widget_->installEventFilter(this);
     setupTableContextMenu();
 
     adjustSize();
@@ -96,4 +98,42 @@ void HistoryPanel::onDeleteRow() {
         table_widget_->removeRow(context_row_);
         context_row_ = -1;
     }
+}
+
+void HistoryPanel::onCellEntered(int row, int /*column*/) {
+    if (row < 0 || row >= static_cast<int>(saved_items_.size()))
+        return;
+
+    // 获取图片路径
+    std::cout << saved_items_[row].image_path << '\n';
+    const QString imgPath = QString::fromStdString(saved_items_[row].image_path);
+
+    // 如果图片不存在则不显示
+    QPixmap pix(imgPath);
+    if (pix.isNull()) {
+        if (preview_label_) preview_label_->hide();
+        std::cout << "Image is not exist" << '\n';
+        return;
+    }
+
+    // 创建或更新预览label
+    if (!preview_label_) {
+        preview_label_ = new QLabel(this, Qt::ToolTip);
+        preview_label_->setWindowFlags(Qt::ToolTip);
+    }
+    preview_label_->setPixmap(pix.scaled(240, 180, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    preview_label_->adjustSize();
+
+    // 获取鼠标位置并显示
+    QPoint globalPos = QCursor::pos();
+    preview_label_->move(globalPos + QPoint(20, 20));
+    preview_label_->show();
+}
+
+// 鼠标离开表格时隐藏预览
+bool HistoryPanel::eventFilter(QObject *obj, QEvent *event) {
+    if (obj == table_widget_ && event->type() == QEvent::Leave) {
+        if (preview_label_) preview_label_->hide();
+    }
+    return QDialog::eventFilter(obj, event);
 }
