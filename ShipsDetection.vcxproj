@@ -37,12 +37,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>6.7.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;widgets;charts</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>6.7.2_msvc2019_64</QtInstall>
-    <QtModules>core;gui;widgets</QtModules>
+    <QtModules>core;gui;widgets;charts</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -126,6 +126,7 @@
     <QtMoc Include="src\ui\LogPanel.h" />
     <QtMoc Include="src\ui\SnapShotPanel.h" />
     <ClInclude Include="src\ocr\ShipNumOCR.h" />
+    <QtMoc Include="src\ui\HistoryPanel.h" />
     <ClInclude Include="src\utils\Locale.hpp" />
     <QtMoc Include="src\ui\MediaPlayer.h" />
   </ItemGroup>
@@ -137,6 +138,7 @@
     <ClCompile Include="src\inference\SessionManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ocr\ShipNumOCR.cpp" />
+    <ClCompile Include="src\ui\HistoryPanel.cpp" />
     <ClCompile Include="src\ui\LogPanel.cpp" />
     <ClCompile Include="src\ui\MainPanel.cpp" />
     <ClCompile Include="src\ui\MediaInfo.cpp" />

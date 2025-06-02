@@ -3,6 +3,7 @@
 #include <QStyle>
 
 #include "MediaPlayer.h"
+#include "HistoryPanel.h"
 
 MediaInfo::MediaInfo(QWidget *parent)
     : QWidget(parent), is_playing_(true), elapsed_time_(0, 0, 0) {
@@ -53,6 +54,18 @@ void MediaInfo::setup_ui() {
         on_capture_frame_clicked(condition);
     });
 
+    // 创建历史按钮
+    history_button_ = new QPushButton("历史", this);
+    history_button_->setMinimumWidth(380); // 设置最小宽度
+    history_button_->setMinimumHeight(35); // 设置最小高度
+    connect(history_button_, &QPushButton::clicked, this, []() {
+        // 弹出历史面板
+        auto *panel = new HistoryPanel();
+        panel->setAttribute(Qt::WA_DeleteOnClose);
+        panel->setWindowModality(Qt::ApplicationModal);
+        panel->show();
+    });
+
     // 连接按钮信号
     connect(play_pause_button_, &QPushButton::clicked, this, &MediaInfo::on_play_pause_clicked);
     connect(reset_button_, &QPushButton::clicked, this, &MediaInfo::reset_clicked);
@@ -78,6 +91,9 @@ void MediaInfo::setup_ui() {
     QHBoxLayout *button_layout = new QHBoxLayout;
     button_layout->addWidget(capture_button_);  // 添加拍照按钮到布局
 
+    QHBoxLayout *button1_layout = new QHBoxLayout;
+    button1_layout->addWidget(history_button_);
+
     // 创建按钮布局
     QHBoxLayout *control_layout = new QHBoxLayout();
     control_layout->addWidget(play_pause_button_);
@@ -94,6 +110,7 @@ void MediaInfo::setup_ui() {
     // 添加按钮布局，紧跟在信息部分之后
     main_layout_->addLayout(file_layout);
     main_layout_->addLayout(button_layout);
+    main_layout_->addLayout(button1_layout);
     main_layout_->addLayout(control_layout);
 
     // 添加弹性空间，将所有内容推向顶部

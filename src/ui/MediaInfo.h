@@ -49,6 +49,7 @@ private:
     QPushButton *reset_button_;
     QPushButton *open_file_button_; // 文件选择按钮
     QPushButton *capture_button_; // 捕获帧按钮
+    QPushButton *history_button_; // 捕获帧按钮
 
     // 布局
     QVBoxLayout *main_layout_;

@@ -93,6 +93,9 @@
     <ClCompile Include="src\ocr\ShipNumOCR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\HistoryPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\ui\MediaPlayer.h">
@@ -108,6 +111,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="src\ui\SnapShotPanel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\ui\HistoryPanel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

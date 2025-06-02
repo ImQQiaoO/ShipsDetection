@@ -56,8 +56,9 @@ public:
         }
     }
 
-    void read_from_json(const std::string &json_filename) {
+    static std::vector<SnapShotItem> read_from_json(const std::string &json_filename) {
         std::ifstream ifs(json_filename);
+        std::vector<SnapShotItem> all_items;
         if (ifs.good() && ifs.peek() != std::ifstream::traits_type::eof()) {
             try {
                 nlohmann::json existing_json;
@@ -66,19 +67,20 @@ public:
                 // 检查JSON是否为数组格式
                 if (existing_json.is_array()) {
                     // 将JSON数组反序列化为SnapShotItem向量
-                    all_items_list_ = existing_json.get<std::vector<SnapShotItem>>();
+                    all_items = existing_json.get<std::vector<SnapShotItem>>();
                 }
             } catch (const std::exception &e) {
                 // 读取或反序列化失败，输出错误信息但继续执行
                 std::cerr << "Warning: Failed to read existing JSON file: " << e.what() << std::endl;
-                all_items_list_.clear(); // 确保数组A为空，重新开始
+                all_items.clear(); // 确保数组A为空，重新开始
             }
         }
         ifs.close();
+        return all_items;
     }
 
     void save_to_file(const std::string &json_filename) {
-        read_from_json(json_filename);
+        all_items_list_ = read_from_json(json_filename);
         all_items_list_.insert(all_items_list_.end(), item_list_.begin(), item_list_.end());
 
         nlohmann::json final_json = all_items_list_;

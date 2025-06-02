@@ -38,7 +38,6 @@ SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionRe
     // QTableWidget 自带滚动条，无需外部 QScrollArea
     table_widget_ = new QTableWidget(this);
     table_widget_->setColumnCount(4);
-    // 可根据需要修改列标题
     table_widget_->setHorizontalHeaderLabels({
         tr("序号"),
         tr("类型"),
