@@ -72,6 +72,28 @@ HistoryPanel::HistoryPanel() {
     mainLayout->addWidget(table_widget_);    // 下方表格
     setLayout(mainLayout);
 
+    setupTableContextMenu();
+
     adjustSize();
 }
 
+void HistoryPanel::setupTableContextMenu() {
+    table_widget_->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(table_widget_, &QTableWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        QModelIndex index = table_widget_->indexAt(pos);
+        if (!index.isValid()) return;
+        context_row_ = index.row();
+
+        QMenu menu(this);
+        QAction *deleteAction = menu.addAction(tr("删除"));
+        connect(deleteAction, &QAction::triggered, this, &HistoryPanel::onDeleteRow);
+        menu.exec(table_widget_->viewport()->mapToGlobal(pos));
+    });
+}
+
+void HistoryPanel::onDeleteRow() {
+    if (context_row_ >= 0 && context_row_ < table_widget_->rowCount()) {
+        table_widget_->removeRow(context_row_);
+        context_row_ = -1;
+    }
+}
