@@ -10,7 +10,7 @@ std::vector<DetectionResult> MediaPlayer::detections_;
 
 MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QWidget(parent), session_(session), mod_(mod), frame_count_(0),
-    video_path_("./target_video/ship_video.mp4"), is_paused_(false) {
+    video_path_(""), is_paused_(true) {
 
     // 创建简单布局，只包含图像标签
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -21,26 +21,13 @@ MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
     image_label_->setMinimumSize(600, 600);
     layout->addWidget(image_label_);
 
-    // 打开视频
-    cap_.open(video_path_);
-    if (!cap_.isOpened()) {
-        utils::utf2ansi_out << "无法打开视频文件: " << video_path_ << '\n';
-        return;
-    }
-
-    video_fps_ = cap_.get(cv::CAP_PROP_FPS);
-    utils::utf2ansi_out << "视频输入帧率: " << video_fps_ << " FPS" << '\n';
-
-    // 创建定时器用于更新帧
+    // 不自动打开视频，也不启动定时器，等待用户选择视频
     timer_ = new QTimer(this);
     connect(timer_, &QTimer::timeout, this, &MediaPlayer::update_frame);
 
     // 初始化计时点
     overall_start_ = std::chrono::high_resolution_clock::now();
     last_fps_update_time_ = overall_start_;
-
-    // 启动定时器
-    timer_->start(1000 / video_fps_);
 }
 
 MediaPlayer::~MediaPlayer() {
@@ -135,7 +122,23 @@ double MediaPlayer::get_current_fps() const {
 
 void MediaPlayer::set_video_path(const std::string &path) {
     video_path_ = path;
-    reset_video();
+    // 打开视频并设置帧率
+    cap_.release();
+    cap_.open(video_path_);
+    if (!cap_.isOpened()) {
+        utils::utf2ansi_out << "无法打开视频文件: " << video_path_ << '\n';
+        return;
+    }
+    video_fps_ = cap_.get(cv::CAP_PROP_FPS);
+    utils::utf2ansi_out << "视频输入帧率: " << video_fps_ << " FPS" << '\n';
+    // 重置计数器和计时
+    frame_count_ = 0;
+    overall_start_ = std::chrono::high_resolution_clock::now();
+    last_fps_update_time_ = overall_start_;
+    emit frame_processed(0);
+    emit fps_updated(0.0);
+    is_paused_ = false;
+    timer_->start(1000 / video_fps_);
 }
 
 void MediaPlayer::reset_video() {

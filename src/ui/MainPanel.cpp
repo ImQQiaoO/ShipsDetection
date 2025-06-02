@@ -33,23 +33,7 @@ MainPanel::MainPanel(Ort::Session *session, ModelInit &mod, QWidget *parent)
     connect(media_info_, &MediaInfo::open_file_clicked, this, &MainPanel::on_open_file_clicked);
 
     connect(media_info_, &MediaInfo::capture_frame_clicked, this, &MainPanel::on_capture_frame);
-
-    // 设置视频信息
-    cv::VideoCapture &cap = media_player_->get_cap();
-    if (cap.isOpened()) {
-        int width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
-        int height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
-        double fps = cap.get(cv::CAP_PROP_FPS);
-        int totalFrames = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_COUNT));
-
-        media_info_->set_video_path(QString::fromStdString("./target_video/ship_video.mp4"));
-        media_info_->set_video_resolution(width, height);
-        media_info_->set_video_fps(fps);
-        media_info_->set_frame_count(totalFrames);
-    }
-
 }
-
 
 void MainPanel::setup_ui() {
     // 创建中央部件
@@ -112,7 +96,7 @@ void MainPanel::on_open_file_clicked() {
     QString file_path = QFileDialog::getOpenFileName(
         this,
         "选择视频文件",
-        QDir::homePath(),  // 从用户主目录开始
+        "D:\\Playground\\test\\ShipsDetection\\target_video",
         "视频文件 (*.mp4 *.avi *.mkv *.mov);;所有文件 (*.*)"
     );
 
