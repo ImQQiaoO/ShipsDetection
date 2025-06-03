@@ -105,8 +105,19 @@ void MainPanel::on_open_file_clicked() {
         // 更新媒体播放器的视频路径
         media_player_->set_video_path(file_path.toStdString());
 
-        // 更新信息面板中的文件路径
+        // 获取视频分辨率、帧率、总帧数
+        cv::VideoCapture cap(file_path.toStdString());
+        int width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
+        int height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
+        double fps = cap.get(cv::CAP_PROP_FPS);
+        int frame_count = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_COUNT));
+        cap.release();
+
+        // 更新信息面板中的文件路径、分辨率、帧率、总帧数
         media_info_->set_video_path(file_path);
+        media_info_->set_video_resolution(width, height);
+        media_info_->set_video_fps(fps);
+        media_info_->set_frame_count(frame_count);
 
         // 重置视频播放
         media_player_->reset_video();
