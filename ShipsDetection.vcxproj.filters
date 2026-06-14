@@ -49,9 +49,6 @@
     <ClInclude Include="src\utils\Locale.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ocr\ShipNumOCR.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\inference\DrawBoundingBox.cpp">
@@ -88,9 +85,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\utils\JsonRepository.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ocr\ShipNumOCR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ui\HistoryPanel.cpp">

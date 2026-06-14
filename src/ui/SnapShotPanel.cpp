@@ -8,7 +8,7 @@
 #include "LogPanel.h"
 #include "src/inference/DrawBoundingBox.h"
 #include "src/utils/JsonRepository.hpp"
-#include "src/ocr/ShipNumOCR.h"
+//#include "src/ocr/ShipNumOCR.h"
 
 SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionResult> &results, const QString &filename,
     const LogPanel *log_panel, QWidget *parent) : QDialog(parent), curr_frame_(image) {
@@ -16,7 +16,7 @@ SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionRe
     setWindowTitle(tr("当前帧")); // tr() 以便翻译
 
     filename_ = filename;
-    std::vector<std::string> ship_identifiers = get_ocr_res(results);
+    //std::vector<std::string> ship_identifiers = get_ocr_res(results);
     process_image(results);
     auto qimage = cv2qimage(image, log_panel);
     // ———— 上方：图片展示 ————
@@ -65,7 +65,8 @@ SnapShotPanel::SnapShotPanel(const cv::Mat &image, const std::vector<DetectionRe
         QTableWidgetItem *item3 = new QTableWidgetItem(QString::number(result.confidence, 'f', 2));
         item3->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 2, item3);  // 置信度
-        QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(ship_identifiers[i])); // 船舶编号
+        //QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString(ship_identifiers[i])); // 船舶编号
+		QTableWidgetItem *item4 = new QTableWidgetItem(QString::fromStdString("N/A")); // 船舶编号（暂时无法获取）
         item4->setTextAlignment(Qt::AlignCenter);
         table_widget_->setItem(i, 3, item4);
     }
@@ -117,16 +118,16 @@ void SnapShotPanel::closeEvent(QCloseEvent *event) {
     QDialog::closeEvent(event);
 }
 
-std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) const {
-    std::vector<std::string> ship_identifiers(results.size());
-    cv::Mat ocr_image = curr_frame_.clone();
-    for (size_t i = 0; i < ship_identifiers.size(); ++i) {
-        cv::Mat roi_image = ocr_image(results[i].bbox);
-        ShipNumOCR ship_ocr;
-        ship_identifiers[i] = ship_ocr.recognizeText(roi_image);
-    }
-    return ship_identifiers;
-}
+//std::vector<std::string> SnapShotPanel::get_ocr_res(const std::vector<DetectionResult> &results) const {
+//    std::vector<std::string> ship_identifiers(results.size());
+//    cv::Mat ocr_image = curr_frame_.clone();
+//    for (size_t i = 0; i < ship_identifiers.size(); ++i) {
+//        cv::Mat roi_image = ocr_image(results[i].bbox);
+//        ShipNumOCR ship_ocr;
+//        ship_identifiers[i] = ship_ocr.recognizeText(roi_image);
+//    }
+//    return ship_identifiers;
+//}
 
 QImage SnapShotPanel::cv2qimage(const cv::Mat &frame, const LogPanel *log_panel) {
     QImage qImg;

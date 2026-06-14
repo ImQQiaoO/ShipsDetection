@@ -3,7 +3,8 @@
 /.vs
 ships_dataset
 runs
-TrainProcess.md
+*.md
+!README.md
 target
 /*.pt
 ShipsDetection

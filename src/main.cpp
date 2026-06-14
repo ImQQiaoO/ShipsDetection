@@ -96,24 +96,12 @@ int main(int argc, char *argv[]) {
 
     ModelInit mod(session);
 
-    std::vector<const char *> output_names;
-    for (const auto &str : mod.get_output_names()) {
-        output_names.push_back(str.c_str());
-    }
-
-    //std::string target_dir = "./target/";
-    //for (const auto &entry : fs::directory_iterator(target_dir)) {
-    //    reg_img(entry.path(), session, mod);
-    //}
-    //cv::waitKey(0);
-    //reg_video(session, mod);
-
-    QApplication app(argc, argv);
-    // 创建并显示视频播放器
-    MainPanel panel(session, mod);
-    panel.show();
-    return QApplication::exec();
-    //return 0;
+    reg_video(engine);
     
+    //QApplication app(argc, argv);
+    //MainPanel panel(session, mod);
+    //panel.show();
+    //return QApplication::exec();
+    return 0;
 }
 

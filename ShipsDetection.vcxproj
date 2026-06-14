@@ -20,13 +20,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -125,7 +125,6 @@
     <QtMoc Include="src\ui\MainPanel.h" />
     <QtMoc Include="src\ui\LogPanel.h" />
     <QtMoc Include="src\ui\SnapShotPanel.h" />
-    <ClInclude Include="src\ocr\ShipNumOCR.h" />
     <QtMoc Include="src\ui\HistoryPanel.h" />
     <ClInclude Include="src\utils\Locale.hpp" />
     <QtMoc Include="src\ui\MediaPlayer.h" />
@@ -137,7 +136,6 @@
     <ClCompile Include="src\inference\ModelInit.cpp" />
     <ClCompile Include="src\inference\SessionManager.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\ocr\ShipNumOCR.cpp" />
     <ClCompile Include="src\ui\HistoryPanel.cpp" />
     <ClCompile Include="src\ui\LogPanel.cpp" />
     <ClCompile Include="src\ui\MainPanel.cpp" />
