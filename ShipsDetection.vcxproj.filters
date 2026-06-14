@@ -40,6 +40,9 @@
     <ClInclude Include="src\inference\ImageInference.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\inference\InferenceEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\inference\ModelInit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,6 +58,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\inference\ImageInference.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\inference\InferenceEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\inference\ModelInit.cpp">

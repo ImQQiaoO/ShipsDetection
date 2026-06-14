@@ -1,6 +1,6 @@
-﻿#include "inference/SessionManager.h"
+#include "inference/SessionManager.h"
 #include "inference/ModelInit.h"
-#include "inference/ImageInference.h"
+#include "inference/InferenceEngine.h"
 #include <filesystem>
 #include <opencv2/opencv.hpp>
 #include "src/utils/Locale.hpp"
@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-void reg_video(Ort::Session *session, ModelInit &mod) {
+void reg_video(InferenceEngine &engine) {
     std::string video_path = "./target_video/ship_video.mp4";
     cv::VideoCapture cap(video_path);
     if (!cap.isOpened()) {
@@ -18,35 +18,27 @@ void reg_video(Ort::Session *session, ModelInit &mod) {
     }
 
     double input_fps = cap.get(cv::CAP_PROP_FPS);
-    int width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));  // 获取视频宽度
-    int height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));  // 获取视频高度
+    int width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
+    int height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
     utils::utf2ansi_out << "视频输入帧率: " << input_fps << " FPS, 分辨率: " << width << "x" << height << '\n';
-
-    //// 创建 VideoWriter 对象用于保存输出视频
-    //std::string output_video_path = "./target_video/93986399-1-06_output.mp4";
-    //cv::VideoWriter writer(output_video_path, cv::VideoWriter::fourcc('X', '2', '6', '4'), input_fps, cv::Size(width, height));
-
-
-    //if (!writer.isOpened()) {
-    //    utils::utf2ansi_out << "无法打开视频写入器: " << output_video_path << '\n';
-    //    return;
-    //}
 
     cv::Mat frame;
     int frame_count = 0;
+
+    // 预热：前几帧不计入统计（CUDA/cuDNN 首次执行有额外初始化开销）
+    int warmup_frames = 5;
+    while (warmup_frames > 0 && cap.read(frame)) {
+        engine.detect(frame);
+        --warmup_frames;
+    }
+
     auto overall_start = std::chrono::high_resolution_clock::now();
 
     while (cap.read(frame)) {
-        // 处理推理和绘制边界框
-        ImageInference image_inference(frame, session, mod);
-        image_inference.draw_bounding_box();
-
-        //// 将处理后的帧写入输出视频
-        //writer.write(frame);
-
-        cv::imshow("Video Frame", frame);
+        engine.detect(frame);
         ++frame_count;
 
+        cv::imshow("Video Frame", frame);
         if (cv::waitKey(1) >= 0)
             break;
     }
@@ -55,11 +47,10 @@ void reg_video(Ort::Session *session, ModelInit &mod) {
     double total_time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(overall_end - overall_start).count();
     double average_fps = (frame_count > 0) ? (frame_count * 1000.0 / total_time_ms) : 0;
 
-    utils::utf2ansi_out << "处理了 " << frame_count << " 帧, 总耗时："
+    utils::utf2ansi_out << "处理了 " << frame_count << " 帧 (预热 5 帧未计入), 总耗时："
         << total_time_ms << " ms, 平均帧率：" << average_fps << " FPS" << '\n';
 
     cap.release();
-    //writer.release();  // 释放 VideoWriter
     cv::destroyAllWindows();
 }
 
@@ -95,13 +86,13 @@ int main(int argc, char *argv[]) {
     Ort::Session *session = session_manager.get_session();
 
     ModelInit mod(session);
+    InferenceEngine engine(session, mod);
 
     reg_video(engine);
-    
+
     //QApplication app(argc, argv);
     //MainPanel panel(session, mod);
     //panel.show();
     //return QApplication::exec();
     return 0;
 }
-

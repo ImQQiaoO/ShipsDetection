@@ -1,5 +1,5 @@
 ﻿#include "MediaPlayer.h"
-#include "src/inference/ImageInference.h"
+#include "src/inference/InferenceEngine.h"
 #include "src/utils/Locale.hpp"
 #include <QVBoxLayout>
 #include <QCoreApplication>
@@ -11,6 +11,9 @@ std::vector<DetectionResult> MediaPlayer::detections_;
 MediaPlayer::MediaPlayer(Ort::Session *session, ModelInit &mod, QWidget *parent)
     : QWidget(parent), session_(session), mod_(mod), frame_count_(0),
     video_path_(""), is_paused_(true) {
+
+    // 创建推理引擎（只构造一次，复用所有缓冲区）
+    engine_ = std::make_unique<InferenceEngine>(session_, mod_);
 
     // 创建简单布局，只包含图像标签
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -53,15 +56,10 @@ void MediaPlayer::update_frame() {
 
     cv::Mat frame;
     if (cap_.read(frame)) {
-        
-        // 处理推理和绘制边界框
-        std::vector<DetectionResult> detections;
-        {
-            ImageInference image_inference(frame, session_, mod_);
-            image_inference.draw_bounding_box();
-            detections = image_inference.get_curr_info();
-            detections_ = detections;
-        }
+
+        // 使用复用的推理引擎（避免逐帧内存分配）
+        std::vector<DetectionResult> detections = engine_->detect(frame);
+        detections_ = detections;
 
         // 发送检测结果信号
         for (const auto &detection : detections) {

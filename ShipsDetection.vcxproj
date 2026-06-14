@@ -119,6 +119,7 @@
     <ClInclude Include="src\inference\CUDAMemoryManager.h" />
     <ClInclude Include="src\inference\DrawBoundingBox.h" />
     <ClInclude Include="src\inference\ImageInference.h" />
+    <ClInclude Include="src\inference\InferenceEngine.h" />
     <ClInclude Include="src\inference\ModelInit.h" />
     <ClInclude Include="src\inference\SessionManager.h" />
     <QtMoc Include="src\ui\MediaInfo.h" />
@@ -133,6 +134,7 @@
     <ClCompile Include="src\inference\CUDAMemoryManager.cpp" />
     <ClCompile Include="src\inference\DrawBoundingBox.cpp" />
     <ClCompile Include="src\inference\ImageInference.cpp" />
+    <ClCompile Include="src\inference\InferenceEngine.cpp" />
     <ClCompile Include="src\inference\ModelInit.cpp" />
     <ClCompile Include="src\inference\SessionManager.cpp" />
     <ClCompile Include="src\main.cpp" />

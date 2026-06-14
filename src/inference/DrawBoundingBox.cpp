@@ -25,7 +25,9 @@ const std::vector<std::array<double, 4>> DrawBoundingBox::box_color = {
 };
 
 DrawBoundingBox::DrawBoundingBox() {
-    class_names = parse_class_names("./ships_dataset/data.yaml");
+    if (class_names.empty()) {
+        class_names = parse_class_names("./ships_dataset/data.yaml");
+    }
 }
 
 void DrawBoundingBox::draw(cv::Mat &img, const std::vector<int> &indices, const std::vector<cv::Rect> &boxes, const std::vector<float> &confidences,

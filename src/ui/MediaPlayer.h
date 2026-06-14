@@ -6,8 +6,10 @@
 #include <onnxruntime_cxx_api.h>
 #include "src/inference/ModelInit.h"
 #include <chrono>
+#include <memory>
 
 #include "src/inference/ImageInference.h"
+#include "src/inference/InferenceEngine.h"
 
 class MediaPlayer : public QWidget {
     Q_OBJECT
@@ -41,6 +43,7 @@ private:
     cv::VideoCapture cap_;
     Ort::Session *session_;
     ModelInit &mod_;
+    std::unique_ptr<InferenceEngine> engine_;
     int frame_count_;
     std::string video_path_;
     double video_fps_;
